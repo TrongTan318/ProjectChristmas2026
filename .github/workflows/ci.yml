@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
+  workflow_dispatch: # cho phép bấm "Run workflow" để chạy tay trên bất kỳ nhánh nào
 
 jobs:
   test:
