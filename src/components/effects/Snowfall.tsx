@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { EFFECTS_EVENT, readEffectsPreference } from './effects-preference';
+import { useEffect, useRef, useState } from "react";
+import { EFFECTS_EVENT, readEffectsPreference } from "./effects-preference";
 
 interface Flake {
   x: number;
@@ -22,9 +22,13 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
 
   useEffect(() => {
     const decide = () => {
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       const nav = navigator as Navigator & { deviceMemory?: number };
-      const weak = (nav.deviceMemory ?? 4) <= 2 || (navigator.hardwareConcurrency ?? 4) <= 2;
+      const weak =
+        (nav.deviceMemory ?? 4) <= 2 ||
+        (navigator.hardwareConcurrency ?? 4) <= 2;
       setActive(enabled && !reduced && !weak && readEffectsPreference());
     };
     decide();
@@ -35,7 +39,7 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!active) return;
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
     let width = 0;
@@ -51,7 +55,7 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.round(Math.min(70, (width * height) / 22000));
+      const count = Math.round(Math.min(180, (width * height) / 8000));
       flakes = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -67,7 +71,7 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
       if (t - last < 33) return; // ~30 FPS là đủ mượt, tiết kiệm pin
       last = t;
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = 'rgba(255, 250, 235, 0.85)';
+      ctx.fillStyle = "rgba(255, 250, 235, 0.85)";
       for (const f of flakes) {
         f.y += f.speed;
         f.phase += 0.01;
@@ -90,15 +94,21 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
 
     resize();
     raf = requestAnimationFrame(frame);
-    window.addEventListener('resize', resize);
-    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [active]);
 
   if (!active) return null;
-  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none fixed inset-0 z-40" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-40"
+    />
+  );
 }
