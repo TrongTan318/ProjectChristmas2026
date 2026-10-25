@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: hangda
+          POSTGRES_PASSWORD: hangda
+          POSTGRES_DB: hangda_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U hangda"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://hangda:hangda@localhost:5432/hangda_test?schema=public
+      RUN_INTEGRATION: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài thư viện
+        run: npm ci
+
+      - name: Tạo Prisma Client + migration DB test
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+
+      - name: Kiểm tra kiểu TypeScript
+        run: npx tsc --noEmit
+
+      - name: Chạy test (unit + tích hợp)
+        run: npx vitest run
+
+      - name: Build thử
+        run: npx next build
