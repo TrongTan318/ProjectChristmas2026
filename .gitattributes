@@ -1,0 +1,5 @@
+# Luôn dùng LF: script .sh và config chạy trên VPS Linux sẽ lỗi nếu có CRLF.
+* text=auto eol=lf
+*.ttf binary
+*.png binary
+*.webp binary

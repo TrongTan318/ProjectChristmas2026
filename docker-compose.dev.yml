@@ -1,0 +1,18 @@
+# Môi trường phát triển: chỉ chạy PostgreSQL, app chạy bằng `npm run dev` (Node ≥ 20).
+#   docker compose -f docker-compose.dev.yml up -d
+name: hangda-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hangda
+      POSTGRES_PASSWORD: hangda
+      POSTGRES_DB: hangda
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+
+volumes:
+  pgdata-dev:

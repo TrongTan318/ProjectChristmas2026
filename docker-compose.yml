@@ -1,0 +1,72 @@
+name: hangda
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: Asia/Ho_Chi_Minh
+    command: >
+      postgres -c max_connections=100 -c shared_buffers=256MB
+      -c effective_cache_size=768MB -c work_mem=8MB
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Không mở cổng ra ngoài. Truy cập DB: docker compose exec postgres psql -U $POSTGRES_USER
+
+  app:
+    build: .
+    image: hangda-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      UPLOAD_DIR: /app/storage/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000" # chỉ Nginx trên host truy cập được
+    volumes:
+      - ./storage/media:/app/storage/media
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  # Chạy migration: docker compose run --rm migrate
+  migrate:
+    image: hangda-app:latest
+    profiles: ["tools"]
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["node_modules/.bin/prisma", "migrate", "deploy"]
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      TZ: Asia/Ho_Chi_Minh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backups:/backups
+      - ./deploy/scripts/backup-loop.sh:/backup-loop.sh:ro
+    entrypoint: ["/bin/sh", "/backup-loop.sh"]
+
+volumes:
+  pgdata:

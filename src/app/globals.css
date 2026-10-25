@@ -1,0 +1,184 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-gold: #d4af37;
+  --color-gold-light: #f3dc8a;
+  --color-gold-dark: #9c7a1c;
+  --color-burgundy: #6d1a2b;
+  --color-burgundy-light: #8e2a3e;
+  --color-burgundy-dark: #3d0a15;
+  --color-ink: #0d0a0b;
+  --color-ink-soft: #1a1416;
+  --color-ivory: #fbf8f1;
+  --color-parchment: #f3ecdc;
+
+  --font-sans: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif-family), Georgia, 'Times New Roman', serif;
+
+  --animate-flicker: flicker 3.2s ease-in-out infinite;
+  --animate-shimmer: shimmer 6s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+
+  @keyframes flicker {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    25% { opacity: 1; transform: scale(1.04) translateY(-1px); }
+    50% { opacity: 0.75; transform: scale(0.98); }
+    75% { opacity: 0.95; transform: scale(1.02); }
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+@layer components {
+  .text-gold-gradient {
+    background: linear-gradient(100deg, #9c7a1c 0%, #f3dc8a 30%, #d4af37 50%, #f3dc8a 70%, #9c7a1c 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-museum {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgb(109 26 43 / 0.55), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% 100%, rgb(212 175 55 / 0.08), transparent 70%),
+      var(--color-ink);
+  }
+
+  .bg-parchment-texture {
+    background:
+      radial-gradient(ellipse at top, rgb(255 255 255 / 0.6), transparent 60%),
+      linear-gradient(180deg, var(--color-ivory), var(--color-parchment));
+    color: var(--color-ink);
+  }
+
+  /* Khung tranh mạ vàng cho tác phẩm */
+  .frame-gold {
+    position: relative;
+    padding: 10px;
+    background: linear-gradient(135deg, #f3dc8a, #9c7a1c 25%, #d4af37 50%, #7a5c10 75%, #f3dc8a);
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 20px 40px -12px rgb(0 0 0 / 0.7),
+      inset 0 0 0 1px rgb(255 255 255 / 0.35);
+  }
+  .frame-gold > .frame-inner {
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 3px rgb(61 10 21 / 0.9), inset 0 0 18px rgb(0 0 0 / 0.6);
+    background: var(--color-ink-soft);
+  }
+
+  /* Bảng chú thích kiểu bảo tàng */
+  .museum-plaque {
+    background: linear-gradient(180deg, #f8f1de, #eadfc2);
+    color: var(--color-ink);
+    border: 1px solid rgb(156 122 28 / 0.6);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 6px 16px -8px rgb(0 0 0 / 0.6);
+  }
+
+  /* Kính màu nhà thờ */
+  .stained-glass {
+    background:
+      conic-gradient(from 0deg at 50% 50%,
+        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4),
+        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4), rgb(109 26 43 / 0.55));
+    mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 72%);
+  }
+
+  .candle-glow {
+    background: radial-gradient(circle, rgb(255 200 90 / 0.55) 0%, rgb(212 175 55 / 0.18) 35%, transparent 70%);
+    filter: blur(6px);
+    animation: var(--animate-flicker);
+  }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.85rem 1.75rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    background: linear-gradient(180deg, #f3dc8a, #d4af37 55%, #b38f23);
+    box-shadow: 0 8px 24px -10px rgb(212 175 55 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s;
+  }
+  .btn-gold:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 28px -10px rgb(212 175 55 / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+  .btn-gold:disabled {
+    opacity: 0.6;
+    transform: none;
+  }
+
+  .btn-outline-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.8rem 1.6rem;
+    font-weight: 600;
+    color: var(--color-gold-light);
+    border: 1.5px solid rgb(212 175 55 / 0.7);
+    background: rgb(13 10 11 / 0.35);
+    backdrop-filter: blur(4px);
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-outline-gold:hover {
+    background: rgb(212 175 55 / 0.15);
+    color: #fff;
+  }
+
+  .prose-museum p + p {
+    margin-top: 1em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

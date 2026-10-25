@@ -1,0 +1,389 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum VotingStatus {
+  OPEN
+  LOCKED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum VideoKind {
+  YOUTUBE
+  FILE
+}
+
+enum TokenStatus {
+  ACTIVE
+  USED
+  REVOKED
+}
+
+enum VoteStatus {
+  VALID
+  INVALIDATED
+}
+
+model Role {
+  id        Int       @id @default(autoincrement())
+  code      RoleCode  @unique
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  users     User[]
+
+  @@map("roles")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String    @map("password_hash")
+  roleId         Int       @map("role_id")
+  isActive       Boolean   @default(true) @map("is_active")
+  failedLogins   Int       @default(0) @map("failed_logins")
+  lockedUntil    DateTime? @map("locked_until")
+  lastLoginAt    DateTime? @map("last_login_at")
+  sessionVersion Int       @default(0) @map("session_version")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  role             Role         @relation(fields: [roleId], references: [id])
+  auditLogs        AuditLog[]
+  tokenBatches     TokenBatch[]
+  invalidatedVotes Vote[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Contest {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  name            String
+  organizer       String
+  year            Int
+  isActive        Boolean      @default(false) @map("is_active")
+  votingStatus    VotingStatus @default(LOCKED) @map("voting_status")
+  votingStartAt   DateTime?    @map("voting_start_at")
+  votingEndAt     DateTime?    @map("voting_end_at")
+  resultsPublic   Boolean      @default(false) @map("results_public")
+  resultsRealtime Boolean      @default(false) @map("results_realtime")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  deletedAt       DateTime?    @map("deleted_at")
+
+  settings      Setting[]
+  teams         Team[]
+  products      Product[]
+  tokenBatches  TokenBatch[]
+  tokens        VoteToken[]
+  votes         Vote[]
+  announcements Announcement[]
+  sponsors      Sponsor[]
+  banners       Banner[]
+
+  @@index([isActive])
+  @@map("contests")
+}
+
+model Setting {
+  id        String    @id @default(cuid())
+  contestId String    @map("contest_id")
+  key       String
+  value     Json
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  @@unique([contestId, key])
+  @@map("settings")
+}
+
+/// Giáo khu: dùng để thống kê phiếu theo nơi phát phiếu.
+model Zone {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  batches TokenBatch[]
+  tokens  VoteToken[]
+  votes   Vote[]
+
+  @@index([sortOrder])
+  @@map("zones")
+}
+
+model Team {
+  id         String    @id @default(cuid())
+  contestId  String    @map("contest_id")
+  name       String
+  className  String    @map("class_name")
+  leaderName String?   @map("leader_name")
+  members    String?   @db.Text
+  sortOrder  Int       @default(0) @map("sort_order")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  contest Contest  @relation(fields: [contestId], references: [id])
+  product Product?
+
+  @@unique([contestId, name])
+  @@index([contestId, sortOrder])
+  @@map("teams")
+}
+
+model Product {
+  id               String        @id @default(cuid())
+  contestId        String        @map("contest_id")
+  /// Null khi sản phẩm đã bị xóa mềm, để đội có thể tạo sản phẩm mới.
+  teamId           String?       @unique @map("team_id")
+  slug             String
+  name             String
+  shortDescription String        @default("") @map("short_description") @db.Text
+  designIdea       String        @default("") @map("design_idea") @db.Text
+  religiousMeaning String        @default("") @map("religious_meaning") @db.Text
+  christmasMessage String        @default("") @map("christmas_message") @db.Text
+  status           ProductStatus @default(DRAFT)
+  isFeatured       Boolean       @default(false) @map("is_featured")
+  sortOrder        Int           @default(0) @map("sort_order")
+  viewCount        Int           @default(0) @map("view_count")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+
+  contest Contest        @relation(fields: [contestId], references: [id])
+  team    Team?          @relation(fields: [teamId], references: [id])
+  images  ProductImage[]
+  videos  ProductVideo[]
+  votes   Vote[]
+
+  @@unique([contestId, slug])
+  @@index([contestId, status, sortOrder])
+  @@map("products")
+}
+
+model ProductImage {
+  id          String    @id @default(cuid())
+  productId   String    @map("product_id")
+  /// Khóa lưu trữ gốc; các biến thể là `${key}-${size}.webp`.
+  key         String    @unique
+  width       Int
+  height      Int
+  blurDataUrl String    @map("blur_data_url") @db.Text
+  alt         String    @default("")
+  isCover     Boolean   @default(false) @map("is_cover")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, sortOrder])
+  @@map("product_images")
+}
+
+model ProductVideo {
+  id        String    @id @default(cuid())
+  productId String    @map("product_id")
+  kind      VideoKind
+  youtubeId String?   @map("youtube_id")
+  fileKey   String?   @unique @map("file_key")
+  title     String    @default("")
+  isIntro   Boolean   @default(false) @map("is_intro")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, sortOrder])
+  @@map("product_videos")
+}
+
+model TokenBatch {
+  id              String    @id @default(cuid())
+  contestId       String    @map("contest_id")
+  zoneId          String?   @map("zone_id")
+  label           String
+  quantity        Int
+  serialFrom      Int       @map("serial_from")
+  serialTo        Int       @map("serial_to")
+  createdById     String    @map("created_by_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  contest   Contest     @relation(fields: [contestId], references: [id])
+  zone      Zone?       @relation(fields: [zoneId], references: [id])
+  createdBy User        @relation(fields: [createdById], references: [id])
+  tokens    VoteToken[]
+
+  @@index([contestId])
+  @@map("token_batches")
+}
+
+model VoteToken {
+  id           String      @id @default(cuid())
+  contestId    String      @map("contest_id")
+  batchId      String      @map("batch_id")
+  zoneId       String?     @map("zone_id")
+  serial       Int
+  /// HMAC-SHA256(token, TOKEN_SECRET). Token gốc không bao giờ được lưu.
+  tokenHash    String      @unique @map("token_hash")
+  status       TokenStatus @default(ACTIVE)
+  usedAt       DateTime?   @map("used_at")
+  revokedAt    DateTime?   @map("revoked_at")
+  revokeReason String?     @map("revoke_reason")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+
+  contest Contest    @relation(fields: [contestId], references: [id])
+  batch   TokenBatch @relation(fields: [batchId], references: [id])
+  zone    Zone?      @relation(fields: [zoneId], references: [id])
+  vote    Vote?
+
+  @@unique([contestId, serial])
+  @@index([contestId, status])
+  @@index([batchId])
+  @@index([zoneId])
+  @@map("vote_tokens")
+}
+
+model Vote {
+  id              String     @id @default(cuid())
+  contestId       String     @map("contest_id")
+  /// UNIQUE: một token chỉ tạo được đúng một phiếu.
+  tokenId         String     @unique @map("token_id")
+  productId       String     @map("product_id")
+  zoneId          String?    @map("zone_id")
+  status          VoteStatus @default(VALID)
+  invalidReason   String?    @map("invalid_reason")
+  invalidatedAt   DateTime?  @map("invalidated_at")
+  invalidatedById String?    @map("invalidated_by_id")
+  ipHash          String?    @map("ip_hash")
+  userAgent       String?    @map("user_agent")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
+
+  contest       Contest   @relation(fields: [contestId], references: [id])
+  token         VoteToken @relation(fields: [tokenId], references: [id])
+  product       Product   @relation(fields: [productId], references: [id])
+  zone          Zone?     @relation(fields: [zoneId], references: [id])
+  invalidatedBy User?     @relation(fields: [invalidatedById], references: [id])
+
+  @@index([contestId, status, productId])
+  @@index([contestId, createdAt])
+  @@index([ipHash])
+  @@map("votes")
+}
+
+model Announcement {
+  id          String    @id @default(cuid())
+  contestId   String    @map("contest_id")
+  slug        String
+  title       String
+  excerpt     String    @default("") @db.Text
+  content     String    @default("") @db.Text
+  coverKey    String?   @map("cover_key")
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  @@unique([contestId, slug])
+  @@index([contestId, isPublished, publishedAt])
+  @@map("announcements")
+}
+
+model Sponsor {
+  id        String    @id @default(cuid())
+  contestId String    @map("contest_id")
+  name      String
+  logoKey   String?   @map("logo_key")
+  url       String?
+  tier      String    @default("")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  @@index([contestId, isActive, sortOrder])
+  @@map("sponsors")
+}
+
+model Banner {
+  id        String    @id @default(cuid())
+  contestId String    @map("contest_id")
+  title     String
+  subtitle  String    @default("")
+  imageKey  String?   @map("image_key")
+  ctaLabel  String    @default("") @map("cta_label")
+  ctaUrl    String    @default("") @map("cta_url")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  @@index([contestId, isActive, sortOrder])
+  @@map("banners")
+}
+
+/// Nhật ký chỉ thêm, không sửa/xóa.
+model AuditLog {
+  id         String    @id @default(cuid())
+  userId     String?   @map("user_id")
+  action     String
+  entityType String    @map("entity_type")
+  entityId   String?   @map("entity_id")
+  before     Json?
+  after      Json?
+  ipHash     String?   @map("ip_hash")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}

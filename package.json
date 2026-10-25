@@ -1,0 +1,52 @@
+{
+  "name": "hang-da-giang-sinh-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Website triển lãm và bình chọn Hội Thi Hang Đá Giáng Sinh 2026 — Giáo xứ Bình Thới",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "@prisma/client": "^6.16.0",
+    "exceljs": "^4.4.0",
+    "framer-motion": "^12.23.0",
+    "jose": "^5.10.0",
+    "next": "^15.5.0",
+    "pdfkit": "^0.17.1",
+    "prisma": "^6.16.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recharts": "^2.15.4",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.3",
+    "tsx": "^4.20.0",
+    "yet-another-react-lightbox": "^3.25.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.15.0",
+    "@types/pdfkit": "^0.17.2",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
