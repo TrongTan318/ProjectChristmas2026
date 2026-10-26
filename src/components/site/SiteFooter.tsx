@@ -7,15 +7,18 @@ export function SiteFooter({ settings, organizer }: { settings: SiteSettings; or
   return (
     <footer className="relative border-t border-gold/20 bg-ink">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-3">
-        <div>
-          <p className="font-serif text-2xl text-gold-gradient">Hang Đá Giáng Sinh 2026</p>
-          <p className="mt-3 text-ivory/70">{organizer}</p>
-          <p className="mt-4 font-serif text-ivory/80 italic">
-            “Hôm nay, một Đấng Cứu Độ đã sinh ra cho anh em.” <span className="not-italic">(Lc 2,11)</span>
-          </p>
+      {/* 3 khối cùng kiểu tiêu đề; justify-between để khoảng cách giữa các khối bằng nhau. */}
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-14 sm:px-6 md:flex-row md:justify-between md:gap-12">
+        <div className="md:max-w-sm">
+          <p className="text-sm font-semibold tracking-widest text-gold uppercase">Hang Đá Giáng Sinh 2026</p>
+          <div className="mt-4 space-y-2">
+            <p className="text-ivory/80">{organizer}</p>
+            <p className="font-serif text-ivory/80 italic">
+              “Hôm nay, một Đấng Cứu Độ đã sinh ra cho anh em.” <span className="not-italic">(Lc 2,11)</span>
+            </p>
+          </div>
         </div>
-        <div>
+        <div className="md:max-w-xs">
           <p className="text-sm font-semibold tracking-widest text-gold uppercase">Liên hệ</p>
           <ul className="mt-4 space-y-2 text-ivory/80">
             {settings.address && <li>{settings.address}</li>}
@@ -51,15 +54,13 @@ export function SiteFooter({ settings, organizer }: { settings: SiteSettings; or
               <li><a className="hover:text-gold-light" href={settings.youtubeUrl} rel="noopener noreferrer" target="_blank">YouTube</a></li>
             )}
           </ul>
-          <div className="mt-6">
-            <EffectsToggle />
-          </div>
         </div>
       </div>
       <Ornament className="pb-4" />
-      <p className="pb-8 text-center text-xs text-ivory/50">
-        © 2026 {organizer}. Ad Majorem Dei Gloriam.
-      </p>
+      <div className="flex flex-col items-center gap-3 pb-8">
+        <EffectsToggle />
+        <p className="text-center text-xs text-ivory/50">© 2026 {organizer}. Ad Majorem Dei Gloriam.</p>
+      </div>
     </footer>
   );
 }
