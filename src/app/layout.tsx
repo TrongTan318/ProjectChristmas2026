@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro, Playfair_Display } from 'next/font/google';
+import { MusicPlayer } from '@/components/effects/MusicPlayer';
+import { getMusicTracks } from '@/server/music';
 import './globals.css';
 
 const sans = Be_Vietnam_Pro({
@@ -34,10 +36,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const tracks = await getMusicTracks();
   return (
     <html lang="vi" className={`${sans.variable} ${serif.variable}`}>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        {children}
+        {/* Ở root layout để nhạc không bị ngắt khi chuyển giữa trang triển lãm và bình chọn. */}
+        <MusicPlayer tracks={tracks} />
+      </body>
     </html>
   );
 }
