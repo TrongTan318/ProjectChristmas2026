@@ -29,18 +29,6 @@ export async function setVotingStatus(_prev: ActionState, form: FormData) {
   });
 }
 
-export async function setResultsVisibility(_prev: ActionState, form: FormData) {
-  return runAction(async () => {
-    const user = await requireSuperAdminWithPassword(form.get('password'));
-    const contest = await requireActiveContest();
-    const data = { resultsPublic: bool(form, 'resultsPublic'), resultsRealtime: bool(form, 'resultsRealtime') };
-    await prisma.contest.update({ where: { id: contest.id }, data });
-    await audit({ userId: user.id, action: 'results.visibility', entityType: 'Contest', entityId: contest.id, before: { resultsPublic: contest.resultsPublic, resultsRealtime: contest.resultsRealtime }, after: data });
-    done();
-    return 'Đã cập nhật hiển thị kết quả.';
-  });
-}
-
 const contestSchema = z
   .object({
     name: z.string().trim().min(1, 'Nhập tên cuộc thi').max(200),

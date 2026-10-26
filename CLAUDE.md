@@ -36,7 +36,8 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Ghi phiếu trong **một transaction**: `updateMany ... WHERE status='ACTIVE'` (kiểm tra `count === 1`) + `vote.create` với `UNIQUE(token_id)` (`src/server/services/voting.ts`). Gửi lại cùng sản phẩm → trả biên nhận (idempotent).
 - Token: CSPRNG 80 bit, Crockford Base32 16 ký tự; DB chỉ lưu `HMAC-SHA256(token, TOKEN_SECRET)` → PDF phiếu chỉ tải được 1 lần lúc tạo lô.
 - Nhận phiếu khi `votingStatus = OPEN` **và** trong `[votingStartAt, votingEndAt]` (`getVotingState`).
-- `resultsPublic = false` → `/api/results` trả 403, trang không lộ số phiếu.
+- Số phiếu + xếp hạng **luôn công khai**, `ResultsBoard` polling 10s (đã bỏ `resultsPublic/resultsRealtime` theo yêu cầu người dùng). "Nổi bật" = top 3 theo phiếu, bằng phiếu xét `viewCount` (`pickFeatured`, `listFeatured`); 0 phiếu thì không hiện. Không chọn tay.
+- Lượt xem: trình duyệt gọi `POST /api/views` (`ViewTracker`), vì HTML công khai bị Nginx microcache; `recordView` chống trùng 1 IP/sản phẩm/30 phút.
 - Thao tác nhạy cảm (mở/khóa, sinh/vô hiệu phiếu, hủy phiếu bầu, đổi kết quả, tài khoản): Super Admin + nhập lại mật khẩu (`requireSuperAdminWithPassword`) + `audit()`.
 - Soft delete (`deletedAt`); khi xóa mềm bản ghi có cột unique thì đổi tên/slug để không chặn bản ghi mới.
 - Giờ lưu UTC, hiển thị `Asia/Ho_Chi_Minh` (`src/lib/format.ts`).

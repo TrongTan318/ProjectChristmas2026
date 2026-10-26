@@ -7,9 +7,10 @@ import { Reveal } from '@/components/site/Reveal';
 import { ShareButton } from '@/components/site/ShareButton';
 import { YouTubeFacade } from '@/components/site/YouTubeFacade';
 import { fileUrl, mediaUrl } from '@/lib/media';
+import { ViewCount } from '@/components/site/ViewCount';
+import { ViewTracker } from '@/components/site/ViewTracker';
 import { requireActiveContest } from '@/server/contest';
-import { clientIp, clientUserAgent } from '@/server/request';
-import { getProductBySlug, listProducts, recordView } from '@/server/services/content';
+import { getProductBySlug, listProducts } from '@/server/services/content';
 import { getVoteSession } from '@/server/vote-session';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -55,13 +56,7 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(contest.id, slug);
   if (!product) notFound();
 
-  const [all, voteSession, ip, ua] = await Promise.all([
-    listProducts(contest.id),
-    getVoteSession(),
-    clientIp(),
-    clientUserAgent(),
-  ]);
-  void recordView(product.id, ip, ua);
+  const [all, voteSession] = await Promise.all([listProducts(contest.id), getVoteSession()]);
 
   const position = all.findIndex((p) => p.id === product.id);
   const prev = position > 0 ? all[position - 1] : all[all.length - 1];
@@ -80,6 +75,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <article>
+      <ViewTracker productId={product.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
       <header className="bg-museum pt-28 pb-12 sm:pt-32">
@@ -100,6 +96,7 @@ export default async function ProductPage({ params }: Props) {
                 {product.team?.name ? ` · ${product.team.name}` : ''}
               </p>
               <h1 className="mt-4 font-serif text-4xl leading-tight font-bold text-gold-gradient sm:text-5xl">{product.name}</h1>
+              <ViewCount count={product.viewCount} className="mt-3 text-sm text-ivory/60" />
               <Ornament className="mt-6 !justify-start" />
               {product.shortDescription && (
                 <p className="mt-6 text-lg leading-relaxed text-ivory/85 sm:text-xl">{product.shortDescription}</p>

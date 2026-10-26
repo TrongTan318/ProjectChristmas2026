@@ -4,7 +4,7 @@ import { getVotingState } from '@/domain/voting';
 import { toLocalInput } from '@/lib/format';
 import { isSuperAdmin, requireAdmin } from '@/server/auth';
 import { getSiteSettings, requireActiveContest } from '@/server/contest';
-import { setResultsVisibility, setVotingStatus, updateContest, updateSiteSettings } from './actions';
+import { setVotingStatus, updateContest, updateSiteSettings } from './actions';
 
 function PasswordConfirm() {
   return (
@@ -53,14 +53,10 @@ export default async function SettingsPage() {
           </Card>
 
           <Card title="Hiển thị kết quả">
-            <ActionForm action={setResultsVisibility} className="space-y-3">
-              <div className="flex flex-col gap-2">
-                <Checkbox name="resultsPublic" label="Công khai kết quả trên website" defaultChecked={contest.resultsPublic} />
-                <Checkbox name="resultsRealtime" label="Cập nhật realtime (tự làm mới mỗi 10 giây)" defaultChecked={contest.resultsRealtime} />
-              </div>
-              <PasswordConfirm />
-              <SubmitButton>Lưu hiển thị kết quả</SubmitButton>
-            </ActionForm>
+            <p className="text-sm text-zinc-700">
+              Số phiếu và bảng xếp hạng <strong>luôn công khai</strong> trên website, tự cập nhật mỗi 10 giây.
+              Mục &quot;Nổi bật&quot; tự lấy 3 hang đá nhiều phiếu nhất (bằng phiếu thì xét lượt xem).
+            </p>
           </Card>
 
           <Card title="Thông tin cuộc thi & khung giờ bình chọn" className="lg:col-span-2">

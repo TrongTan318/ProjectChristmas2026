@@ -48,10 +48,6 @@ export default async function DashboardPage() {
         <span className="text-sm text-zinc-600">
           Mở: {formatDateTime(contest.votingStartAt)} → Đóng: {formatDateTime(contest.votingEndAt)}
         </span>
-        <span className="text-sm text-zinc-600">
-          · Kết quả công khai: <strong>{contest.resultsPublic ? 'Bật' : 'Tắt'}</strong>
-          {contest.resultsPublic && ` (realtime: ${contest.resultsRealtime ? 'bật' : 'tắt'})`}
-        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

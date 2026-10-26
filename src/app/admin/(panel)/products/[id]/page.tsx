@@ -70,9 +70,6 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
             <Field label="Thứ tự hiển thị">
               <Input name="sortOrder" type="number" min={0} defaultValue={product.sortOrder} />
             </Field>
-            <div className="flex items-end pb-2">
-              <Checkbox name="isFeatured" label="Sản phẩm nổi bật (trang chủ)" defaultChecked={product.isFeatured} />
-            </div>
           </div>
           <SubmitButton>Lưu sản phẩm</SubmitButton>
         </ActionForm>

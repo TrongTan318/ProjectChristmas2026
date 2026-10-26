@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getVotingState, rank, stateToError } from '@/domain/voting';
+import { getVotingState, pickFeatured, rank, stateToError } from '@/domain/voting';
 import { parseYoutubeId } from '@/lib/media';
 import { fromLocalInput, slugify, toLocalInput } from '@/lib/format';
 
@@ -36,6 +36,23 @@ describe('rank', () => {
   });
   it('không có phiếu → 0%', () => {
     expect(rank([{ votes: 0 }])[0]!.percent).toBe(0);
+  });
+});
+
+describe('pickFeatured', () => {
+  it('lấy 3 sản phẩm nhiều phiếu nhất, bằng phiếu thì xét lượt xem', () => {
+    const r = pickFeatured([
+      { id: 'a', votes: 5, views: 10 },
+      { id: 'b', votes: 9, views: 1 },
+      { id: 'c', votes: 5, views: 40 },
+      { id: 'd', votes: 2, views: 999 },
+      { id: 'e', votes: 1, views: 0 },
+    ]);
+    expect(r.map((x) => x.id)).toEqual(['b', 'c', 'a']);
+  });
+  it('bỏ qua sản phẩm 0 phiếu; chưa có phiếu nào → rỗng', () => {
+    expect(pickFeatured([{ id: 'a', votes: 1, views: 0 }, { id: 'b', votes: 0, views: 50 }]).map((x) => x.id)).toEqual(['a']);
+    expect(pickFeatured([{ votes: 0, views: 100 }])).toEqual([]);
   });
 });
 

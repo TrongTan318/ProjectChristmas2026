@@ -3,8 +3,20 @@ import type { ProductListItem } from '@/server/services/content';
 import { cn } from '@/lib/format';
 import { CardSlideshow } from './CardSlideshow';
 import { Picture } from './Picture';
+import { ViewCount } from './ViewCount';
 
-export function ProductCard({ product, large, priority }: { product: ProductListItem; large?: boolean; priority?: boolean }) {
+export function ProductCard({
+  product,
+  large,
+  priority,
+  featured,
+}: {
+  product: ProductListItem;
+  large?: boolean;
+  priority?: boolean;
+  /** Thuộc top 3 theo phiếu (`listFeatured`). */
+  featured?: boolean;
+}) {
   const cover = product.images[0];
   return (
     <Link
@@ -33,7 +45,7 @@ export function ProductCard({ product, large, priority }: { product: ProductList
             />
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-          {product.isFeatured && (
+          {featured && (
             <span className="absolute top-3 left-3 rounded-full bg-burgundy/90 px-3 py-1 text-xs font-semibold text-gold-light">
               ★ Nổi bật
             </span>
@@ -54,6 +66,7 @@ export function ProductCard({ product, large, priority }: { product: ProductList
         {large && product.shortDescription && (
           <p className="mt-1.5 line-clamp-2 text-sm text-ink/70">{product.shortDescription}</p>
         )}
+        <ViewCount count={product.viewCount} className="mt-1.5 text-xs text-ink/55" />
       </div>
     </Link>
   );

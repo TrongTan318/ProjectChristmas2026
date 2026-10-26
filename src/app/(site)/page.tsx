@@ -11,19 +11,21 @@ import { YouTubeFacade } from '@/components/site/YouTubeFacade';
 import { formatDate } from '@/lib/format';
 import { mediaUrl, parseYoutubeId } from '@/lib/media';
 import { getSiteSettings, requireActiveContest } from '@/server/contest';
-import { listAnnouncements, listBanners, listProducts, listSponsors } from '@/server/services/content';
+import { listAnnouncements, listBanners, listFeatured, listProducts, listSponsors } from '@/server/services/content';
 import { getResults } from '@/server/services/results';
 
 export default async function HomePage() {
   const contest = await requireActiveContest();
-  const [settings, banners, products, news, sponsors] = await Promise.all([
+  const [settings, banners, products, featured, news, sponsors, results] = await Promise.all([
     getSiteSettings(contest.id),
     listBanners(contest.id),
     listProducts(contest.id),
+    listFeatured(contest.id),
     listAnnouncements(contest.id, 3),
     listSponsors(contest.id),
+    getResults(contest.id),
   ]);
-  const results = contest.resultsPublic ? await getResults(contest.id) : null;
+  const featuredIds = new Set(featured.map((p) => p.id));
 
   const slides: HeroSlide[] = banners.length
     ? banners.map((b) => ({ id: b.id, title: b.title, subtitle: b.subtitle, imageKey: b.imageKey, ctaLabel: b.ctaLabel, ctaUrl: b.ctaUrl }))
@@ -38,7 +40,6 @@ export default async function HomePage() {
         ? { target: contest.votingEndAt, label: 'Bình chọn sẽ kết thúc sau' }
         : null;
 
-  const featured = products.filter((p) => p.isFeatured).slice(0, 3);
   const introVideoId = settings.introVideoUrl ? parseYoutubeId(settings.introVideoUrl) : null;
 
   return (
@@ -107,7 +108,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Sản phẩm nổi bật */}
+      {/* Sản phẩm nổi bật: top 3 theo phiếu, ẩn khi chưa có phiếu */}
       {featured.length > 0 && (
         <section className="bg-museum py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -117,7 +118,7 @@ export default async function HomePage() {
             <div className="mt-14 grid gap-x-8 gap-y-14 md:grid-cols-3">
               {featured.map((p, i) => (
                 <Reveal key={p.id} delay={i * 0.12}>
-                  <ProductCard product={p} large />
+                  <ProductCard product={p} large featured />
                 </Reveal>
               ))}
             </div>
@@ -138,7 +139,7 @@ export default async function HomePage() {
           <div className="mt-14 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((p, i) => (
               <Reveal key={p.id} delay={(i % 4) * 0.08}>
-                <ProductCard product={p} />
+                <ProductCard product={p} featured={featuredIds.has(p.id)} />
               </Reveal>
             ))}
           </div>
@@ -151,14 +152,14 @@ export default async function HomePage() {
       </section>
 
       {/* Bảng xếp hạng */}
-      {results && (
+      {results.ranking.length > 0 && (
         <section className="bg-museum py-20 sm:py-28">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <Reveal>
               <SectionHeading eyebrow="Bình chọn" title="Bảng xếp hạng" />
             </Reveal>
             <div className="mt-12">
-              <ResultsBoard initial={results} realtime={contest.resultsRealtime} topN={5} compact />
+              <ResultsBoard initial={results} topN={5} compact />
             </div>
             <div className="mt-10 text-center">
               <Link href="/ket-qua" className="btn-outline-gold">Xem kết quả chi tiết →</Link>

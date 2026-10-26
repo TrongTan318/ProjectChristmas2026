@@ -8,21 +8,11 @@ import { formatDateTime, formatNumber } from '@/lib/format';
 
 const POLL_MS = 10_000;
 
-export function ResultsBoard({
-  initial,
-  realtime,
-  topN,
-  compact,
-}: {
-  initial: Results;
-  realtime: boolean;
-  topN?: number;
-  compact?: boolean;
-}) {
+/** Bảng xếp hạng công khai, tự làm mới mỗi 10 giây. */
+export function ResultsBoard({ initial, topN, compact }: { initial: Results; topN?: number; compact?: boolean }) {
   const [data, setData] = useState(initial);
 
   useEffect(() => {
-    if (!realtime) return;
     let stopped = false;
     const load = async () => {
       if (document.hidden) return;
@@ -38,7 +28,7 @@ export function ResultsBoard({
       stopped = true;
       clearInterval(timer);
     };
-  }, [realtime]);
+  }, []);
 
   const rows = topN ? data.ranking.slice(0, topN) : data.ranking;
   const max = Math.max(1, ...data.ranking.map((r) => r.votes));
@@ -134,8 +124,7 @@ export function ResultsBoard({
       )}
 
       <p className="mt-8 text-center text-xs text-ivory/50">
-        Cập nhật lúc {formatDateTime(data.updatedAt)}
-        {realtime ? ' · tự động làm mới mỗi 10 giây' : ''}
+        Cập nhật lúc {formatDateTime(data.updatedAt)} · tự động làm mới mỗi 10 giây
       </p>
     </div>
   );
