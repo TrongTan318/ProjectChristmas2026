@@ -27,7 +27,7 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - `src/domain/` — logic thuần (token, trạng thái bình chọn, xếp hạng). Không import Next/Prisma.
 - `src/server/` — `import 'server-only'`: db, env, auth (admin JWT + Argon2), vote-session, cache & rate-limit trong bộ nhớ, audit, storage, images (sharp), `services/` (voting, tokens, results, content), `reports/` (PDF phiếu, PDF biên bản, Excel).
 - `src/app/(site)` trang công khai (nền tối, hiệu ứng) · `(vote)` luồng bình chọn (nền sáng, chữ to, không framer-motion) · `v/[token]` đích QR · `admin/(panel)` quản trị (server actions trong `actions.ts`) · `api/admin/*` upload, sinh phiếu PDF, export.
-- Nhạc nền: file trong `public/music/` (mount vào container, thêm/bớt rồi `docker compose restart app`), `src/server/music.ts` quét thư mục, `MusicPlayer` ở root layout (ẩn ở `/admin`). Tuyết (`Snowfall`) chạy trên mọi thiết bị, không phụ thuộc reduced-motion — theo yêu cầu người dùng.
+- Nhạc nền: quản lý ở `/admin/music` (bảng `music_tracks`, tệp `storage/media/music/<uuid>.<ext>`, upload qua `POST /api/admin/music`), **không để nhạc trong source/git**; `src/server/music.ts` đọc DB, `MusicPlayer` ở root layout (ẩn ở `/admin`). Video: ưu tiên link YouTube (`YouTubeFacade`), tránh upload MP4 lên server. Tuyết (`Snowfall`) chạy trên mọi thiết bị, không phụ thuộc reduced-motion — theo yêu cầu người dùng.
 - `prisma/schema.prisma`, `prisma/seed.ts` · `deploy/` nginx + script backup/restore · `tests/unit`, `tests/integration`, `tests/load`.
 
 ## Quy tắc nghiệp vụ không được vi phạm

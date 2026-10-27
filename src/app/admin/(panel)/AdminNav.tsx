@@ -14,6 +14,7 @@ const ITEMS = [
   { href: '/admin/banners', label: 'Banner', icon: '▭' },
   { href: '/admin/news', label: 'Tin tức', icon: '✎' },
   { href: '/admin/sponsors', label: 'Nhà tài trợ', icon: '★' },
+  { href: '/admin/music', label: 'Nhạc nền', icon: '♫' },
   { href: '/admin/settings', label: 'Cài đặt', icon: '⚙' },
   { href: '/admin/users', label: 'Tài khoản', icon: '🔑', superOnly: true },
   { href: '/admin/audit', label: 'Nhật ký', icon: '☰', superOnly: true },

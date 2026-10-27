@@ -36,8 +36,6 @@ services:
       - "127.0.0.1:3000:3000" # chỉ Nginx trên host truy cập được
     volumes:
       - ./storage/media:/app/storage/media
-      # Nhạc nền: thêm/bớt file rồi `docker compose restart app`, không cần build lại.
-      - ./public/music:/app/public/music:ro
     logging:
       driver: json-file
       options: { max-size: "20m", max-file: "5" }
