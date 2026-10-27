@@ -4,11 +4,15 @@
   --color-gold: #d4af37;
   --color-gold-light: #f3dc8a;
   --color-gold-dark: #9c7a1c;
-  --color-burgundy: #6d1a2b;
-  --color-burgundy-light: #8e2a3e;
-  --color-burgundy-dark: #3d0a15;
-  --color-ink: #0d0a0b;
-  --color-ink-soft: #1a1416;
+  /* Bảng màu Giáng Sinh: đỏ sẫm #3B0907 · nâu đỏ #542C2A · xanh thông #113621 (+ vàng kim, ngà) */
+  --color-burgundy: #3b0907;
+  --color-burgundy-light: #542c2a;
+  --color-burgundy-dark: #240504;
+  --color-pine: #113621;
+  --color-pine-light: #1f5236;
+  --color-pine-dark: #0a2114;
+  --color-ink: #0f0908;
+  --color-ink-soft: #22130f;
   --color-ivory: #fbf8f1;
   --color-parchment: #f3ecdc;
 
@@ -95,11 +99,27 @@ body {
     color: transparent;
   }
 
+  /* Nền tối ánh đỏ: đỏ sẫm trên cùng, nâu đỏ và xanh thông lan ở hai góc dưới */
   .bg-museum {
     background:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgb(109 26 43 / 0.55), transparent 70%),
-      radial-gradient(ellipse 60% 50% at 50% 100%, rgb(212 175 55 / 0.08), transparent 70%),
+      radial-gradient(ellipse 85% 60% at 50% 0%, rgb(59 9 7 / 0.95), transparent 72%),
+      radial-gradient(ellipse 55% 45% at 0% 100%, rgb(17 54 33 / 0.55), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 100% 100%, rgb(84 44 42 / 0.45), transparent 70%),
       var(--color-ink);
+  }
+
+  /* Nền tối ánh xanh thông, xen kẽ với .bg-museum */
+  .bg-forest {
+    background:
+      radial-gradient(ellipse 85% 60% at 50% 0%, rgb(17 54 33 / 0.95), transparent 72%),
+      radial-gradient(ellipse 55% 45% at 100% 100%, rgb(59 9 7 / 0.55), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 0% 100%, rgb(84 44 42 / 0.4), transparent 70%),
+      var(--color-ink);
+  }
+
+  /* Dải chuyển 3 màu (đỏ sẫm → nâu đỏ → xanh thông) cho chân trang, đường viền nhấn */
+  .bg-christmas-band {
+    background: linear-gradient(120deg, #3b0907 0%, #542c2a 50%, #113621 100%);
   }
 
   .bg-parchment-texture {
@@ -123,7 +143,7 @@ body {
   .frame-gold > .frame-inner {
     border-radius: 2px;
     overflow: hidden;
-    box-shadow: inset 0 0 0 3px rgb(61 10 21 / 0.9), inset 0 0 18px rgb(0 0 0 / 0.6);
+    box-shadow: inset 0 0 0 3px rgb(59 9 7 / 0.9), inset 0 0 18px rgb(0 0 0 / 0.6);
     background: var(--color-ink-soft);
   }
 
@@ -139,8 +159,8 @@ body {
   .stained-glass {
     background:
       conic-gradient(from 0deg at 50% 50%,
-        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4),
-        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4), rgb(109 26 43 / 0.55));
+        rgb(120 26 20 / 0.6), rgb(212 175 55 / 0.35), rgb(84 44 42 / 0.5), rgb(31 82 54 / 0.5),
+        rgb(120 26 20 / 0.6), rgb(212 175 55 / 0.35), rgb(84 44 42 / 0.5), rgb(31 82 54 / 0.5), rgb(120 26 20 / 0.6));
     mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 72%);
   }
 
@@ -183,7 +203,7 @@ body {
     font-weight: 600;
     color: var(--color-gold-light);
     border: 1.5px solid rgb(212 175 55 / 0.7);
-    background: rgb(13 10 11 / 0.35);
+    background: rgb(15 9 8 / 0.35);
     backdrop-filter: blur(4px);
     transition: background 0.2s, color 0.2s;
   }

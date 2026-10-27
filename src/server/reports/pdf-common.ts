@@ -25,7 +25,7 @@ export function pdfToBuffer(doc: PDFKit.PDFDocument): Promise<Buffer> {
 
 export const COLORS = {
   gold: '#B38F23',
-  burgundy: '#6D1A2B',
+  burgundy: '#3B0907',
   ink: '#1A1416',
   muted: '#6B6B6B',
 };

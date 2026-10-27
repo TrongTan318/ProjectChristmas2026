@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       {(youtubeVideos.length > 0 || fileVideos.length > 0) && (
-        <section className="bg-ink py-16 sm:py-20">
+        <section className="bg-forest py-16 sm:py-20">
           <div className="mx-auto max-w-5xl space-y-10 px-4 sm:px-6">
             <h2 className="text-center font-serif text-3xl text-gold-gradient">Video</h2>
             {fileVideos.map((v) => (

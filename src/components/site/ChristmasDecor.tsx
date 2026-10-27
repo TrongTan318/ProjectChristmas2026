@@ -55,7 +55,7 @@ export function WhiteTree({ className, delay = 0 }: { className?: string; delay?
 /** Hộp quà nhún nhảy, nắp thỉnh thoảng bật lên. */
 export function GiftBox({
   className,
-  color = '#8e2a3e',
+  color = '#7a1e17',
   ribbon = '#d4af37',
   delay = 0,
 }: {
@@ -89,7 +89,7 @@ export function TreeCorner({ mirror }: { mirror?: boolean }) {
       <GiftBox className="-ml-3 h-10 w-10 sm:-ml-4 sm:h-12 sm:w-12" delay={mirror ? 0.9 : 0} />
       <GiftBox
         className="-ml-1 hidden h-8 w-8 sm:block sm:h-10 sm:w-10"
-        color="#145a3c"
+        color="#1f5236"
         ribbon="#f3dc8a"
         delay={mirror ? 0.3 : 1.2}
       />

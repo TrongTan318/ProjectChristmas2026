@@ -32,7 +32,10 @@ export function SiteHeader({ title }: { title: string }) {
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        scrolled || open ? 'border-b border-gold/20 bg-ink/90 backdrop-blur-md' : 'bg-transparent',
+        // Khi cuộn: dải chuyển 3 màu Giáng Sinh (đỏ sẫm → nâu đỏ → xanh thông), hơi trong để thấy mờ phía sau
+        scrolled || open
+          ? 'border-b border-gold/25 bg-[linear-gradient(120deg,rgb(59_9_7/0.92),rgb(84_44_42/0.88)_50%,rgb(17_54_33/0.92))] shadow-[0_8px_24px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md'
+          : 'bg-transparent',
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">

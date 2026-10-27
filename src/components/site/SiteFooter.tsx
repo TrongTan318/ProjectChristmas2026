@@ -5,7 +5,7 @@ import { Ornament } from './Decor';
 
 export function SiteFooter({ settings, organizer }: { settings: SiteSettings; organizer: string }) {
   return (
-    <footer className="relative border-t border-gold/20 bg-ink">
+    <footer className="relative border-t border-gold/20 bg-forest">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
       {/* 3 khối cùng kiểu tiêu đề; justify-between để khoảng cách giữa các khối bằng nhau. */}
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-14 sm:px-6 md:flex-row md:justify-between md:gap-12">

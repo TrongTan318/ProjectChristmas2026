@@ -78,7 +78,7 @@ export default async function HomePage() {
 
       {/* Đếm ngược */}
       {countdown && (
-        <section className="relative overflow-hidden bg-museum py-20">
+        <section className="relative overflow-hidden bg-forest py-20">
           <div className="mx-auto max-w-4xl px-4 sm:px-6">
             <Reveal>
               <Countdown target={countdown.target.toISOString()} serverNow={now.toISOString()} label={countdown.label} />
@@ -94,7 +94,7 @@ export default async function HomePage() {
 
       {/* Video giới thiệu */}
       {introVideoId && (
-        <section className="bg-ink py-20">
+        <section className="bg-museum py-20">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <Reveal>
               <SectionHeading eyebrow="Video" title="Hành trình dựng hang đá" />
@@ -110,7 +110,7 @@ export default async function HomePage() {
 
       {/* Sản phẩm nổi bật: top 3 theo phiếu, ẩn khi chưa có phiếu */}
       {featured.length > 0 && (
-        <section className="bg-museum py-20 sm:py-28">
+        <section className="bg-forest py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <Reveal>
               <SectionHeading eyebrow="Phòng trưng bày chính" title="Tác phẩm nổi bật" />
@@ -127,7 +127,7 @@ export default async function HomePage() {
       )}
 
       {/* Danh sách sản phẩm */}
-      <section className="bg-ink py-20 sm:py-28">
+      <section className="bg-museum py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal>
             <SectionHeading
@@ -153,7 +153,7 @@ export default async function HomePage() {
 
       {/* Bảng xếp hạng */}
       {results.ranking.length > 0 && (
-        <section className="bg-museum py-20 sm:py-28">
+        <section className="bg-forest py-20 sm:py-28">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <Reveal>
               <SectionHeading eyebrow="Bình chọn" title="Bảng xếp hạng" />
@@ -195,7 +195,7 @@ export default async function HomePage() {
 
       {/* Nhà tài trợ */}
       {sponsors.length > 0 && (
-        <section className="bg-ink py-16">
+        <section className="bg-museum py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <p className="text-center text-sm font-semibold tracking-[0.3em] text-gold uppercase">Với sự đồng hành của</p>
             <Ornament className="mt-4" />

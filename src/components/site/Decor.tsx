@@ -57,14 +57,15 @@ export function SectionHeading({
 /** Cửa sổ hoa hồng kính màu (rose window) vẽ bằng SVG. */
 export function RoseWindow({ className }: { className?: string }) {
   const petals = Array.from({ length: 12 });
-  const colors = ['#8e2a3e', '#d4af37', '#1e4078', '#145a3c'];
+  // Đỏ sẫm (sáng hơn để thấy trên nền tối) · vàng kim · nâu đỏ · xanh thông
+  const colors = ['#7a1e17', '#d4af37', '#542c2a', '#1f5236'];
   return (
     <svg viewBox="-100 -100 200 200" className={className} aria-hidden>
       <defs>
         <radialGradient id="rw-center" r="1">
           <stop offset="0" stopColor="#fff6d5" />
           <stop offset="0.5" stopColor="#d4af37" />
-          <stop offset="1" stopColor="#6d1a2b" />
+          <stop offset="1" stopColor="#3b0907" />
         </radialGradient>
       </defs>
       <circle r="98" fill="none" stroke="#d4af37" strokeWidth="2" opacity="0.8" />
