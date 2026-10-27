@@ -1,4 +1,5 @@
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
+import { ImageField } from '@/components/admin/ImageField';
 import { Card, Checkbox, Field, Input, PageHeader, Textarea } from '@/components/admin/ui';
 import { getVotingState } from '@/domain/voting';
 import { toLocalInput } from '@/lib/format';
@@ -83,6 +84,11 @@ export default async function SettingsPage() {
             <Field label="Tiêu đề phần giới thiệu"><Input name="introTitle" defaultValue={settings.introTitle} maxLength={200} /></Field>
             <Field label="Video giới thiệu (link YouTube)"><Input name="introVideoUrl" defaultValue={settings.introVideoUrl} maxLength={300} placeholder="https://www.youtube.com/watch?v=..." /></Field>
           </div>
+          <ImageField
+            name="heroImageKey"
+            defaultKey={settings.heroImageKey}
+            label="Ảnh nền trang chủ (ảnh ngang ~1920×1080, chủ thể ở giữa) — chỉ đổi nền, giữ nguyên chữ"
+          />
           <Field label="Nội dung giới thiệu" hint="Xuống dòng 2 lần để tách đoạn"><Textarea name="introBody" rows={6} defaultValue={settings.introBody} maxLength={5000} /></Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Điện thoại liên hệ"><Input name="contactPhone" defaultValue={settings.contactPhone} maxLength={50} /></Field>

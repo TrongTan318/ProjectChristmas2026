@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { mediaSrcSet, mediaUrl } from '@/lib/media';
-import { Candle, RoseWindow } from './Decor';
+import { TreeCorner } from './ChristmasDecor';
+import { LandedStar, StarOfBethlehem } from './StarOfBethlehem';
+import { RoseWindow } from './Decor';
 
 export interface HeroSlide {
   id: string;
@@ -15,8 +17,19 @@ export interface HeroSlide {
   ctaUrl: string;
 }
 
-export function Hero({ slides, organizer }: { slides: HeroSlide[]; organizer: string }) {
+export function Hero({
+  slides,
+  organizer,
+  backgroundKey,
+}: {
+  slides: HeroSlide[];
+  organizer: string;
+  /** Ảnh nền chung (Cài đặt), dùng khi slide không có ảnh riêng. */
+  backgroundKey?: string | null;
+}) {
   const ref = useRef<HTMLElement>(null);
+  const starSlotRef = useRef<HTMLDivElement>(null);
+  const [starLanded, setStarLanded] = useState(false);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const bgY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '30%']);
@@ -32,48 +45,65 @@ export function Hero({ slides, organizer }: { slides: HeroSlide[]; organizer: st
 
   const slide = slides[index] ?? slides[0];
   if (!slide) return null;
+  const imageKey = slide.imageKey ?? backgroundKey ?? null;
 
   return (
     <section ref={ref} className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-museum">
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10">
         <AnimatePresence mode="sync">
-          {slide.imageKey && (
+          {imageKey && (
             <motion.img
-              key={slide.id}
-              src={mediaUrl(slide.imageKey, 1600)}
-              srcSet={mediaSrcSet(slide.imageKey)}
+              // Ảnh nền chung không chạy lại hiệu ứng khi đổi slide
+              key={slide.imageKey ? slide.id : 'background'}
+              src={mediaUrl(imageKey, 1600)}
+              srcSet={mediaSrcSet(imageKey)}
               sizes="100vw"
               alt=""
               fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover"
               initial={{ opacity: 0, scale: 1.06 }}
-              animate={{ opacity: 0.45, scale: 1 }}
+              animate={{ opacity: 0.8, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.6, ease: 'easeOut' }}
             />
           )}
         </AnimatePresence>
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink" />
+        {/* Có ảnh: phủ nhẹ ở giữa để chữ vàng dễ đọc, giữ ảnh rõ; mép dưới tối dần nối với phần tiếp theo. */}
+        <div
+          className={
+            imageKey
+              ? 'absolute inset-0 bg-gradient-to-b from-ink/50 via-ink/25 to-ink/90'
+              : 'absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink'
+          }
+        />
       </motion.div>
 
-      <motion.div
-        style={{ y: windowY }}
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 w-[min(110vw,820px)] -translate-x-1/2 -translate-y-1/2 opacity-40"
-      >
-        <div className="stained-glass absolute inset-[-10%] animate-[spin_120s_linear_infinite] rounded-full" />
-        <RoseWindow className="relative h-auto w-full" />
-      </motion.div>
+      {/* Cửa sổ kính màu: chỉ hiện khi chưa có ảnh nền, để ảnh là điểm nhấn chính. */}
+      {!imageKey && (
+        <motion.div
+          style={{ y: windowY }}
+          className="pointer-events-none absolute top-1/2 left-1/2 -z-10 w-[min(110vw,820px)] -translate-x-1/2 -translate-y-1/2 opacity-40"
+        >
+          <div className="stained-glass absolute inset-[-10%] animate-[spin_120s_linear_infinite] rounded-full" />
+          <RoseWindow className="relative h-auto w-full" />
+        </motion.div>
+      )}
 
-      <div className="pointer-events-none absolute bottom-10 left-6 hidden gap-6 sm:flex">
-        <Candle />
-        <Candle className="mt-6 scale-90" />
+      {/* Trang trí Giáng Sinh: sao Bêlem bay loạn xạ rồi đậu trên tiêu đề, cây thông trắng + hộp quà ở 2 góc dưới */}
+      <StarOfBethlehem areaRef={ref} targetRef={starSlotRef} onLanded={() => setStarLanded(true)} />
+      {/* Đặt cao hơn nút nhạc nền (cố định góc dưới trái, cao ~56px) để không bị che */}
+      <div className="pointer-events-none absolute bottom-[4.75rem] left-2 -z-[5] sm:left-6">
+        <TreeCorner />
       </div>
-      <div className="pointer-events-none absolute right-6 bottom-10 hidden gap-6 sm:flex">
-        <Candle className="mt-6 scale-90" />
-        <Candle />
+      <div className="pointer-events-none absolute right-2 bottom-[4.75rem] -z-[5] sm:right-6">
+        <TreeCorner mirror />
       </div>
 
       <motion.div style={{ opacity: fade }} className="mx-auto w-full max-w-5xl px-4 pt-24 pb-16 text-center sm:px-6">
+        {/* Chỗ đậu của ngôi sao Bêlem */}
+        <div ref={starSlotRef} className="mx-auto mb-5 size-16 sm:mb-7 sm:size-20" aria-hidden>
+          {starLanded && <LandedStar />}
+        </div>
         <motion.p
           initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

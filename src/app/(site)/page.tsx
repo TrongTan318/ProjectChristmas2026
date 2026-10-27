@@ -44,7 +44,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero slides={slides} organizer={contest.organizer} />
+      <Hero slides={slides} organizer={contest.organizer} backgroundKey={settings.heroImageKey || null} />
 
       {/* Giới thiệu */}
       <section className="bg-parchment-texture py-20 sm:py-28">

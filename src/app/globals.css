@@ -18,6 +18,10 @@
   --animate-flicker: flicker 3.2s ease-in-out infinite;
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-twinkle: twinkle 1.8s ease-in-out infinite;
+  --animate-gift-bounce: gift-bounce 2.6s ease-in-out infinite;
+  --animate-gift-lid: gift-lid 2.6s ease-in-out infinite;
+  --animate-star-glow: star-glow 3.2s ease-in-out infinite;
 
   @keyframes flicker {
     0%, 100% { opacity: 0.85; transform: scale(1); }
@@ -32,6 +36,27 @@
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+  /* Nhảy lên, chạm đất hơi "nén" lại rồi nảy nhẹ */
+  @keyframes gift-bounce {
+    0%, 55%, 100% { transform: translateY(0) scale(1, 1); }
+    15% { transform: translateY(-16px) scale(0.96, 1.05); }
+    28% { transform: translateY(0) scale(1.08, 0.9); }
+    38% { transform: translateY(-5px) scale(1, 1); }
+    46% { transform: translateY(0) scale(1.03, 0.97); }
+  }
+  @keyframes gift-lid {
+    0%, 8%, 30%, 100% { transform: translateY(0) rotate(0); }
+    16% { transform: translateY(-7px) rotate(-10deg); }
+  }
+  /* Hào quang ngôi sao Bêlem "thở" */
+  @keyframes star-glow {
+    0%, 100% { opacity: 0.6; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.08); }
   }
 }
 
@@ -172,10 +197,11 @@ body {
   }
 }
 
+/* Trang trí Giáng Sinh (.motion-keep) vẫn chạy như tuyết rơi — theo yêu cầu người dùng. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.motion-keep, .motion-keep *),
+  *:not(.motion-keep, .motion-keep *)::before,
+  *:not(.motion-keep, .motion-keep *)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

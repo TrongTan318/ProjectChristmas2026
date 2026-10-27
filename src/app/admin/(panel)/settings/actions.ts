@@ -64,6 +64,7 @@ export async function updateSiteSettings(_prev: ActionState, form: FormData) {
     const raw = {
       heroTitle: str(form, 'heroTitle'),
       heroSubtitle: str(form, 'heroSubtitle'),
+      heroImageKey: str(form, 'heroImageKey'),
       introTitle: str(form, 'introTitle'),
       introBody: str(form, 'introBody'),
       introVideoUrl: str(form, 'introVideoUrl'),
