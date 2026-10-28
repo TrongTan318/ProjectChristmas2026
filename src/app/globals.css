@@ -170,7 +170,45 @@ body {
     animation: var(--animate-flicker);
   }
 
-  .btn-gold {
+  /* ===== Nút kính mờ (glassmorphism) =====
+     Chất liệu: .glass + màu .glass-green (nút chính, xanh cây thông) | .glass-clear (nút phụ) | .glass-red (xóa).
+     Nút công khai dựng sẵn: .btn-glass (= kính xanh) và .btn-glass-clear (= kính trong).
+     Trong vùng nền sáng (.surface-light: trang bình chọn, admin) kính đậm hơn để vẫn dễ nhận ra. */
+  .glass,
+  .btn-glass,
+  .btn-glass-clear {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  /* Vệt sáng phản chiếu ở nửa trên mặt kính */
+  .glass::before,
+  .btn-glass::before,
+  .btn-glass-clear::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 50% 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0));
+  }
+  .glass:hover:not(:disabled),
+  .btn-glass:hover:not(:disabled),
+  .btn-glass-clear:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .glass:disabled,
+  .btn-glass:disabled,
+  .btn-glass-clear:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-glass,
+  .btn-glass-clear {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -178,38 +216,71 @@ body {
     border-radius: 9999px;
     padding: 0.85rem 1.75rem;
     font-weight: 600;
-    color: var(--color-ink);
-    background: linear-gradient(180deg, #f3dc8a, #d4af37 55%, #b38f23);
-    box-shadow: 0 8px 24px -10px rgb(212 175 55 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.6);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s;
-  }
-  .btn-gold:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 12px 28px -10px rgb(212 175 55 / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.6);
-  }
-  .btn-gold:disabled {
-    opacity: 0.6;
-    transform: none;
   }
 
-  .btn-outline-gold {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 9999px;
-    padding: 0.8rem 1.6rem;
-    font-weight: 600;
-    color: var(--color-gold-light);
-    border: 1.5px solid rgb(212 175 55 / 0.7);
-    background: rgb(15 9 8 / 0.35);
-    backdrop-filter: blur(4px);
-    transition: background 0.2s, color 0.2s;
+  /* Kính xanh cây thông (nút chính) */
+  .glass-green,
+  .btn-glass {
+    color: var(--color-ivory);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+    background: linear-gradient(180deg, rgb(46 125 79 / 0.55), rgb(17 54 33 / 0.72));
+    border: 1px solid rgb(134 214 160 / 0.45);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 10px 26px -12px rgb(31 120 70 / 0.9);
   }
-  .btn-outline-gold:hover {
-    background: rgb(212 175 55 / 0.15);
+  .glass-green:hover:not(:disabled),
+  .btn-glass:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgb(58 152 97 / 0.65), rgb(22 72 44 / 0.8));
+    border-color: rgb(165 232 186 / 0.7);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 14px 30px -12px rgb(46 160 95 / 0.95);
+  }
+
+  /* Kính trong (nút phụ) */
+  .glass-clear,
+  .btn-glass-clear {
+    color: var(--color-gold-light);
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.25);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 8px 22px -14px rgb(0 0 0 / 0.8);
+  }
+  .glass-clear:hover:not(:disabled),
+  .btn-glass-clear:hover:not(:disabled) {
     color: #fff;
+    background: rgb(255 255 255 / 0.15);
+    border-color: rgb(243 220 138 / 0.6);
+  }
+
+  /* Kính đỏ (thao tác xóa / nguy hiểm) */
+  .glass-red {
+    color: #fff;
+    background: linear-gradient(180deg, rgb(160 40 30 / 0.6), rgb(59 9 7 / 0.78));
+    border: 1px solid rgb(240 140 120 / 0.45);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 10px 24px -12px rgb(160 40 30 / 0.9);
+  }
+  .glass-red:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgb(185 50 38 / 0.7), rgb(80 14 10 / 0.85));
+  }
+
+  /* Nền sáng: kính đậm hơn, nút phụ chữ tối */
+  .surface-light .glass-green,
+  .surface-light .btn-glass {
+    background: linear-gradient(180deg, rgb(46 125 79 / 0.9), rgb(17 54 33 / 0.96));
+    border-color: rgb(17 54 33 / 0.55);
+  }
+  .surface-light .glass-clear,
+  .surface-light .btn-glass-clear {
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.65);
+    border-color: rgb(15 9 8 / 0.22);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 6px 18px -10px rgb(15 9 8 / 0.35);
+  }
+  .surface-light .glass-clear:hover:not(:disabled),
+  .surface-light .btn-glass-clear:hover:not(:disabled) {
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.9);
+    border-color: rgb(17 54 33 / 0.5);
+  }
+  .surface-light .glass-red {
+    background: linear-gradient(180deg, rgb(185 45 35 / 0.92), rgb(110 20 14 / 0.96));
   }
 
   .prose-museum p + p {

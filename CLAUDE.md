@@ -51,7 +51,8 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Server action: `'use server'`, chỉ export hàm async; dạng `(prev: ActionState, form: FormData)` bọc bằng `runAction`, validate bằng Zod, gọi `requireAdmin/requireSuperAdmin…`, sau khi ghi gọi `invalidatePublic()` (hoặc `invalidate('r:')` cho kết quả) + `revalidatePath`.
 - Trang đều `force-dynamic` (root layout); hiệu năng dựa vào cache bộ nhớ (`cached()`, TTL 5–30s) + microcache Nginx 10s. Ứng dụng giả định **1 instance**.
 - Ảnh: biến thể `${key}-{400|800|1600}.webp`, dùng `mediaUrl/mediaSrcSet` và component `Picture`.
-- Màu: gold `#D4AF37`, burgundy, ink (đen), ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`).
+- Màu: burgundy `#3B0907`, burgundy-light `#542C2A`, pine `#113621`, ink `#0F0908`, gold `#D4AF37`, ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`); nền tối xen kẽ `.bg-museum` (ánh đỏ) / `.bg-forest` (ánh xanh).
+- Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn.
 - Trang `/v/*`, `/binh-chon`, `/vote` phải nhẹ: chữ ≥ 18px, nút ≥ 48px.
 
 ## Khác với tài liệu kiến trúc

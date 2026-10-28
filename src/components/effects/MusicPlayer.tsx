@@ -132,7 +132,8 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
       {!hidden && (
         <div
           ref={controlsRef}
-          className="fixed bottom-4 left-4 z-50 flex items-center gap-1 rounded-full border border-gold/40 bg-ink/80 p-1 text-ivory shadow-lg backdrop-blur"
+          // Kính trong, thêm lớp tối để vẫn rõ trên trang nền sáng (trang bình chọn)
+          className="glass glass-clear fixed bottom-4 left-4 z-50 flex items-center gap-1 rounded-full !bg-ink/55 p-1"
         >
           <button
             type="button"

@@ -83,7 +83,7 @@ export default async function HomePage() {
             <Reveal>
               <Countdown target={countdown.target.toISOString()} serverNow={now.toISOString()} label={countdown.label} />
               <div className="mt-10 text-center">
-                <Link href="/vote" className="btn-gold text-lg">
+                <Link href="/vote" className="btn-glass text-lg">
                   {state === 'OPEN' ? 'Bình chọn ngay' : 'Hướng dẫn bình chọn'}
                 </Link>
               </div>
@@ -144,7 +144,7 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="mt-14 text-center">
-            <Link href="/trien-lam" className="btn-outline-gold text-lg">
+            <Link href="/trien-lam" className="btn-glass-clear text-lg">
               Tham quan toàn bộ triển lãm →
             </Link>
           </div>
@@ -162,7 +162,7 @@ export default async function HomePage() {
               <ResultsBoard initial={results} topN={5} compact />
             </div>
             <div className="mt-10 text-center">
-              <Link href="/ket-qua" className="btn-outline-gold">Xem kết quả chi tiết →</Link>
+              <Link href="/ket-qua" className="btn-glass-clear">Xem kết quả chi tiết →</Link>
             </div>
           </div>
         </section>

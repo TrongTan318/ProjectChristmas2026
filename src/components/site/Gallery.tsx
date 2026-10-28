@@ -55,7 +55,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
   }));
 
   const arrowCls =
-    'absolute top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-ink/55 text-ivory backdrop-blur-sm transition hover:bg-ink/80 hover:text-gold-light focus-visible:bg-ink/80';
+    'glass glass-clear absolute top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full';
 
   return (
     <div>
@@ -143,7 +143,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
       )}
 
       <div className="mt-4 flex justify-center">
-        <button type="button" className="btn-outline-gold text-sm" onClick={() => setLightboxIndex(current)}>
+        <button type="button" className="btn-glass-clear text-sm" onClick={() => setLightboxIndex(current)}>
           ▶ Xem trình chiếu
         </button>
       </div>

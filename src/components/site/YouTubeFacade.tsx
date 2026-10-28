@@ -30,7 +30,7 @@ export function YouTubeFacade({ videoId, title }: { videoId: string; title: stri
             className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
           />
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gold/90 text-ink shadow-2xl transition-transform group-hover:scale-110">
+            <span className="glass glass-green flex h-20 w-20 items-center justify-center rounded-full shadow-2xl group-hover:scale-110">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M8 5v14l11-7z" />
               </svg>

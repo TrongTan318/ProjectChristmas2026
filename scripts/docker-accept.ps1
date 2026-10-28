@@ -10,5 +10,5 @@ if (docker images -q hangda-app:previous) {
   Write-Host 'Không có bản dự phòng nào cần xóa.'
 }
 docker image prune -f | Select-Object -Last 1
-docker builder prune -f | Select-Object -Last 1
+docker builder prune -a -f | Select-Object -Last 1
 docker system df

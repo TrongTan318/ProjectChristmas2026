@@ -21,6 +21,6 @@ docker compose up -d app
 if ($LASTEXITCODE -ne 0) { throw 'Khởi động bản mới thất bại. Chạy scripts/docker-rollback.ps1 để quay lại.' }
 
 # Cache build không cần cho việc quay lại -> xóa ngay. Image mồ côi (bản chưa duyệt bị thay) cũng xóa.
-docker builder prune -f | Select-Object -Last 1
+docker builder prune -a -f | Select-Object -Last 1
 docker image prune -f | Select-Object -Last 1
 Write-Host 'Xong. Kiểm tra http://localhost:3000 rồi chạy docker-accept.ps1 (duyệt) hoặc docker-rollback.ps1 (quay lại).'

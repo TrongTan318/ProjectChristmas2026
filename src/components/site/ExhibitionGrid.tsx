@@ -10,8 +10,8 @@ function FilterButton({ label, active, onClick }: { label: string; active: boole
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-full border px-4 py-2 text-sm transition-colors',
-        active ? 'border-gold bg-gold text-ink' : 'border-gold/40 text-ivory/85 hover:border-gold hover:text-gold-light',
+        'glass rounded-full px-4 py-2 text-sm',
+        active ? 'glass-green font-semibold' : 'glass-clear',
       )}
     >
       {label}

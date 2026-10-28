@@ -111,7 +111,7 @@ export default async function ProductPage({ params }: Props) {
               )}
               <div className="mt-10 flex flex-wrap gap-3">
                 {voteSession && (
-                  <Link href={`/binh-chon?chon=${product.id}`} className="btn-gold text-lg">
+                  <Link href={`/binh-chon?chon=${product.id}`} className="btn-glass text-lg">
                     ★ Bình chọn hang đá này
                   </Link>
                 )}

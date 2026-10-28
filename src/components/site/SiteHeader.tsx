@@ -61,14 +61,14 @@ export function SiteHeader({ title }: { title: string }) {
               {item.label}
             </Link>
           ))}
-          <Link href="/vote" className="btn-gold ml-3 !px-5 !py-2 text-sm">
+          <Link href="/vote" className="btn-glass ml-3 !px-5 !py-2 text-sm">
             Bình chọn
           </Link>
         </nav>
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full text-gold-light md:hidden"
+          className="glass glass-clear inline-flex h-11 w-11 items-center justify-center rounded-full md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? 'Đóng menu' : 'Mở menu'}
@@ -94,7 +94,7 @@ export function SiteHeader({ title }: { title: string }) {
               {item.label}
             </Link>
           ))}
-          <Link href="/vote" className="btn-gold mt-4 w-full text-lg">
+          <Link href="/vote" className="btn-glass mt-4 w-full text-lg">
             Bình chọn ngay
           </Link>
         </nav>

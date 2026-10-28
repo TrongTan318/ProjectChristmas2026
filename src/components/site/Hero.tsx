@@ -129,10 +129,10 @@ export function Hero({
           </motion.div>
         </AnimatePresence>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href={slide.ctaUrl || '/trien-lam'} className="btn-gold w-full text-lg sm:w-auto">
+          <Link href={slide.ctaUrl || '/trien-lam'} className="btn-glass w-full text-lg sm:w-auto">
             {slide.ctaLabel || 'Vào triển lãm'}
           </Link>
-          <Link href="/vote" className="btn-outline-gold w-full text-lg sm:w-auto">
+          <Link href="/vote" className="btn-glass-clear w-full text-lg sm:w-auto">
             Bình chọn bằng phiếu QR
           </Link>
         </div>
