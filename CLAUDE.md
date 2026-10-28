@@ -19,6 +19,9 @@ docker compose run --rm app npm run db:seed  # SEED_DEMO=true để có dữ li�
 docker compose up -d app                     # http://localhost:3000
 ```
 
+**Build lại web sau khi sửa code: luôn dùng script** (giữ bản cũ làm dự phòng, tự xóa build cache — máy dev ít dung lượng):
+`powershell -ExecutionPolicy Bypass -File scripts/docker-build.ps1` → người dùng duyệt thì `scripts/docker-accept.ps1` (xóa bản dự phòng), không ưng thì `scripts/docker-rollback.ps1`. Không chạy `docker compose build` trực tiếp, không tải thêm image lớn khi chưa hỏi.
+
 Trong container Node 22 (`docker run --rm -v "$PWD:/app" -w /app node:22-alpine ...`): `npm run typecheck`, `npm test`, `npx prisma migrate dev --name <ten>`.
 Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest run tests/integration`.
 
