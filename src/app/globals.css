@@ -29,6 +29,9 @@
   --animate-bulb: bulb 2.4s ease-in-out infinite;
   --animate-sway: sway 4.5s ease-in-out infinite;
   --animate-gold-sweep: gold-sweep 6s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 40s linear infinite;
+  --animate-wobble: wobble 3.6s ease-in-out infinite;
+  --animate-wave: wave 1.8s ease-in-out infinite;
 
   @keyframes flicker {
     0%, 100% { opacity: 0.85; transform: scale(1); }
@@ -75,6 +78,18 @@
   @keyframes sway {
     0%, 100% { transform: rotate(-5deg); }
     50% { transform: rotate(5deg); }
+  }
+  @keyframes spin-slow {
+    to { transform: rotate(360deg); }
+  }
+  /* Người tuyết lắc lư nhẹ, tay vẫy chào */
+  @keyframes wobble {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-22deg); }
   }
   /* Vệt sáng vàng lướt qua chữ rồi nghỉ */
   @keyframes gold-sweep {

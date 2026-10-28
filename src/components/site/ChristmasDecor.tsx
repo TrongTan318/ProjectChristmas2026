@@ -196,6 +196,91 @@ function OrnamentSet({ items, side, className }: { items: Ornament[]; side: 'lef
   );
 }
 
+/** Bông tuyết cắt giấy 6 cánh, xoay rất chậm. */
+export function PaperSnowflake({
+  className,
+  color = '#d4af37',
+  reverse,
+}: {
+  className?: string;
+  color?: string;
+  reverse?: boolean;
+}) {
+  return (
+    <svg
+      viewBox="-50 -50 100 100"
+      className={cn(
+        'motion-keep pointer-events-none absolute animate-spin-slow drop-shadow-[0_2px_3px_rgba(0,0,0,0.12)]',
+        reverse && '[animation-direction:reverse]',
+        className,
+      )}
+      aria-hidden
+    >
+      <g fill="none" stroke={color} strokeWidth="4.5" strokeLinecap="round">
+        {[0, 60, 120, 180, 240, 300].map((deg) => (
+          <g key={deg} transform={`rotate(${deg})`}>
+            <path d="M0 -6 V-44 M0 -18 l-9 -9 M0 -18 l9 -9 M0 -31 l-6 -6 M0 -31 l6 -6" />
+          </g>
+        ))}
+        <circle r="7" />
+      </g>
+    </svg>
+  );
+}
+
+/** Người tuyết tròn trịa, má hồng, khăn quàng; tay phải vẫy chào. */
+export function Snowman({ className, scarf = '#a3241b', delay = 0 }: { className?: string; scarf?: string; delay?: number }) {
+  return (
+    <div className={cn('motion-keep pointer-events-none origin-bottom animate-wobble', className)} style={{ animationDelay: `${delay}s` }} aria-hidden>
+      <svg viewBox="0 0 80 120" className="h-full w-auto drop-shadow-[0_6px_10px_rgba(60,40,30,0.25)]">
+        <ellipse cx="40" cy="116" rx="26" ry="3.5" fill="#000" fillOpacity="0.08" />
+        {/* tay trái */}
+        <path d="M25 60 L9 48 M14 52 L10 44 M14 52 L6 53" stroke="#6b4226" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        {/* tay phải vẫy, xoay quanh vai */}
+        <g className="animate-wave" style={{ transformOrigin: '55px 60px', animationDelay: `${delay}s` }}>
+          <path d="M55 60 L71 46 M66 50 L69 42 M66 50 L75 50" stroke="#6b4226" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        </g>
+        <circle cx="40" cy="92" r="24" fill="#fff" stroke="#d6dee8" strokeWidth="1.5" />
+        <circle cx="40" cy="60" r="17" fill="#fff" stroke="#d6dee8" strokeWidth="1.5" />
+        <circle cx="40" cy="31" r="13" fill="#fff" stroke="#d6dee8" strokeWidth="1.5" />
+        {/* nút áo */}
+        <circle cx="40" cy="55" r="1.8" fill="#22130f" />
+        <circle cx="40" cy="62" r="1.8" fill="#22130f" />
+        <circle cx="40" cy="69" r="1.8" fill="#22130f" />
+        {/* khăn quàng */}
+        <rect x="27" y="41" width="26" height="6" rx="3" fill={scarf} />
+        <rect x="44" y="44" width="6" height="15" rx="2" fill={scarf} transform="rotate(12 47 44)" />
+        {/* mặt */}
+        <circle cx="35.5" cy="29" r="1.6" fill="#22130f" />
+        <circle cx="44.5" cy="29" r="1.6" fill="#22130f" />
+        <circle cx="32" cy="34" r="2.6" fill="#f4a6a0" fillOpacity="0.75" />
+        <circle cx="48" cy="34" r="2.6" fill="#f4a6a0" fillOpacity="0.75" />
+        <path d="M40 31.5 l9 2 l-9 2 z" fill="#f08a24" />
+        <path d="M36 37 Q40 40 44 37" stroke="#22130f" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+        {/* mũ */}
+        <rect x="27" y="17" width="26" height="4" rx="1.5" fill="#22130f" />
+        <rect x="31" y="3" width="18" height="15" rx="1.5" fill="#22130f" />
+        <rect x="31" y="13" width="18" height="3.5" fill={scarf} />
+      </svg>
+    </div>
+  );
+}
+
+/** Đụn tuyết trắng nhấp nhô ở mép dưới khối (đặt trong khối `relative`). */
+export function SnowDrift({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 1200 60"
+      preserveAspectRatio="none"
+      className={cn('pointer-events-none absolute inset-x-0 bottom-0 h-8 w-full sm:h-12', className)}
+      aria-hidden
+    >
+      <path d="M0 34 Q80 14 170 30 T360 26 T560 32 T760 22 T960 30 T1200 24 V60 H0 Z" fill="#ffffff" />
+      <path d="M0 34 Q80 14 170 30 T360 26 T560 32 T760 22 T960 30 T1200 24" fill="none" stroke="#dbe3ec" strokeWidth="2" />
+    </svg>
+  );
+}
+
 /** Cụm góc dưới: cây thông + hộp quà. `mirror` cho góc phải. */
 export function TreeCorner({ mirror }: { mirror?: boolean }) {
   return (

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getVotingState } from '@/domain/voting';
-import { HangingOrnaments, StringLights } from '@/components/site/ChristmasDecor';
+import { HangingOrnaments, PaperSnowflake, SnowDrift, Snowman, StringLights } from '@/components/site/ChristmasDecor';
 import { Countdown } from '@/components/site/Countdown';
 import { CountUp } from '@/components/site/CountUp';
 import { Ornament, SectionHeading } from '@/components/site/Decor';
@@ -10,7 +10,7 @@ import { ProductCard } from '@/components/site/ProductCard';
 import { ResultsBoard } from '@/components/site/ResultsBoard';
 import { Reveal } from '@/components/site/Reveal';
 import { YouTubeFacade } from '@/components/site/YouTubeFacade';
-import { formatDate } from '@/lib/format';
+import { dateParts, formatDate } from '@/lib/format';
 import { mediaUrl, parseYoutubeId } from '@/lib/media';
 import { getSiteSettings, requireActiveContest } from '@/server/contest';
 import { listAnnouncements, listBanners, listFeatured, listProducts, listSponsors } from '@/server/services/content';
@@ -180,37 +180,89 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Tin tức */}
+      {/* Tin tức: bảng tin ghim kiểu dễ thương cho các em — bông tuyết giấy, người tuyết, tờ lịch ngày đăng */}
       {news.length > 0 && (
-        <section className="snap-page bg-parchment-texture">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <section className="snap-page relative overflow-hidden bg-parchment-texture">
+          <PaperSnowflake className="top-20 left-2 size-12 opacity-50 sm:top-24 sm:left-[4%] sm:size-24" />
+          <PaperSnowflake className="top-24 right-3 size-10 opacity-40 sm:top-32 sm:right-[6%] sm:size-20" color="#c0483e" reverse />
+          <PaperSnowflake className="top-1/2 left-[9%] hidden size-14 opacity-35 md:block" color="#c0483e" reverse />
+          <PaperSnowflake className="right-[12%] bottom-40 hidden size-16 opacity-40 md:block" />
+          <SnowDrift />
+          <Snowman className="bottom-3 left-40 hidden h-36 md:absolute md:block lg:h-44" delay={0.4} />
+          <Snowman className="absolute right-3 bottom-2 h-20 sm:right-[6%] sm:h-28 lg:h-36" scarf="#1f5236" />
+
+          <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6">
             <Reveal>
-              <SectionHeading light eyebrow="Tin tức" title="Tin từ Ban tổ chức" />
+              <SectionHeading light eyebrow="Tin từ Ban tổ chức" title="Bản tin Giáng Sinh" />
             </Reveal>
             {/* Điện thoại: thẻ ngang (ảnh nhỏ bên trái) để 3 tin vừa một màn hình */}
-            <div className="mt-8 grid gap-4 sm:mt-14 md:grid-cols-3 md:gap-8">
-              {news.map((n, i) => (
-                <Reveal key={n.id} delay={i * 0.1}>
-                  <Link
-                    href={`/tin-tuc/${n.slug}`}
-                    className="group flex overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-gold-dark/20 md:block"
-                  >
-                    <Picture
-                      imageKey={n.coverKey}
-                      alt={n.title}
-                      sizes="(min-width: 768px) 33vw, 128px"
-                      className="aspect-square w-28 shrink-0 sm:w-40 md:aspect-[16/9] md:w-full"
-                    />
-                    <div className="min-w-0 p-4 md:p-6">
-                      <p className="text-sm text-burgundy">{formatDate(n.publishedAt)}</p>
-                      <h3 className="mt-1 line-clamp-2 font-serif text-lg leading-snug font-semibold text-ink group-hover:text-burgundy md:mt-2 md:line-clamp-none md:text-xl">
-                        {n.title}
-                      </h3>
-                      {n.excerpt && <p className="mt-1 line-clamp-2 text-sm text-ink/70 md:mt-2 md:line-clamp-3 md:text-base">{n.excerpt}</p>}
+            {/* PC: flex canh giữa để 1–2 tin vẫn nằm giữa, không lệch trái */}
+            <div className="mt-8 grid gap-5 sm:mt-14 md:flex md:flex-wrap md:justify-center md:gap-8">
+              {news.map((n, i) => {
+                const date = n.publishedAt ? dateParts(n.publishedAt) : null;
+                const isNew = !!n.publishedAt && now.getTime() - n.publishedAt.getTime() < 7 * 86_400_000;
+                return (
+                  <Reveal key={n.id} delay={i * 0.1} className="md:w-[calc((100%-4rem)/3)]">
+                    {/* Thẻ ghim hơi nghiêng như tờ thông báo trên bảng tin; rê chuột thì thẳng lại */}
+                    <div
+                      className={`relative transition-transform duration-300 hover:rotate-0 ${
+                        ['-rotate-[1.2deg]', 'rotate-[1deg]', '-rotate-[0.6deg]'][i % 3]
+                      }`}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="absolute -top-3 left-1/2 z-10 size-7 -translate-x-1/2 text-gold drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)]"
+                        fill="currentColor"
+                        aria-hidden
+                      >
+                        <path d="M12 0l2.4 8.6L24 12l-9.6 3.4L12 24l-2.4-8.6L0 12l9.6-3.4z" />
+                      </svg>
+                      <Link
+                        href={`/tin-tuc/${n.slug}`}
+                        className="group flex overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-gold-dark/20 md:block"
+                      >
+                        <div className="relative shrink-0">
+                          <Picture
+                            imageKey={n.coverKey}
+                            alt={n.title}
+                            sizes="(min-width: 768px) 33vw, 128px"
+                            className="aspect-square w-28 sm:w-40 md:aspect-[16/9] md:w-full"
+                          />
+                          {date && (
+                            <time
+                              dateTime={n.publishedAt!.toISOString()}
+                              title={formatDate(n.publishedAt)}
+                              className="absolute top-2 left-2 w-10 overflow-hidden rounded-md bg-white text-center shadow-md ring-1 ring-black/5 md:top-3 md:left-3 md:w-14"
+                            >
+                              <span className="block bg-[#a3241b] py-0.5 text-[9px] font-bold tracking-wide text-white uppercase md:text-[11px]">
+                                Th{date.month}
+                              </span>
+                              <span className="block font-serif text-lg leading-tight font-bold text-ink md:text-2xl">{date.day}</span>
+                            </time>
+                          )}
+                        </div>
+                        <div className="relative min-w-0 flex-1 p-4 md:p-6">
+                          {isNew && (
+                            <span className="absolute top-2 right-2 rotate-6 rounded-full bg-[#a3241b] px-2 py-0.5 text-[10px] font-bold tracking-wider text-white shadow md:top-3 md:right-3 md:text-xs">
+                              MỚI
+                            </span>
+                          )}
+                          <h3 className="line-clamp-2 pr-10 font-serif text-lg leading-snug font-semibold text-ink group-hover:text-burgundy md:line-clamp-none md:text-xl">
+                            {n.title}
+                          </h3>
+                          {n.excerpt && <p className="mt-1 line-clamp-2 text-sm text-ink/70 md:mt-2 md:line-clamp-3 md:text-base">{n.excerpt}</p>}
+                          <p className="mt-3 hidden text-sm font-semibold text-burgundy md:block">Đọc tiếp →</p>
+                        </div>
+                      </Link>
                     </div>
-                  </Link>
-                </Reveal>
-              ))}
+                  </Reveal>
+                );
+              })}
+            </div>
+            <div className="surface-light mt-8 text-center sm:mt-12">
+              <Link href="/tin-tuc" className="btn-glass-clear">
+                Xem tất cả tin tức →
+              </Link>
             </div>
           </div>
         </section>
