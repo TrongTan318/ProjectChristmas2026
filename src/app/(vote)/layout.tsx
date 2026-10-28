@@ -9,7 +9,7 @@ export default async function VoteLayout({ children }: { children: React.ReactNo
   const contest = await requireActiveContest();
   const settings = await getSiteSettings(contest.id);
   return (
-    <div className="min-h-dvh bg-ivory text-ink [color-scheme:light]">
+    <div className="surface-light min-h-dvh bg-ivory text-ink [color-scheme:light]">
       <header className="border-b-4 border-gold bg-burgundy-dark text-ivory">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4">
           <Link href="/" className="flex items-center gap-2">

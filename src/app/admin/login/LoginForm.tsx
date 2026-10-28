@@ -32,7 +32,7 @@ export function LoginForm() {
           {state.error}
         </p>
       )}
-      <button type="submit" disabled={pending} className="btn-gold w-full">
+      <button type="submit" disabled={pending} className="btn-glass w-full">
         {pending ? 'Đang đăng nhập…' : 'Đăng nhập'}
       </button>
     </form>

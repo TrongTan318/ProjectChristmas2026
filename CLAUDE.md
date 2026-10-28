@@ -19,6 +19,9 @@ docker compose run --rm app npm run db:seed  # SEED_DEMO=true để có dữ li�
 docker compose up -d app                     # http://localhost:3000
 ```
 
+**Build lại web sau khi sửa code: luôn dùng script** (giữ bản cũ làm dự phòng, tự xóa build cache — máy dev ít dung lượng):
+`powershell -ExecutionPolicy Bypass -File scripts/docker-build.ps1` → người dùng duyệt thì `scripts/docker-accept.ps1` (xóa bản dự phòng), không ưng thì `scripts/docker-rollback.ps1`. Không chạy `docker compose build` trực tiếp, không tải thêm image lớn khi chưa hỏi.
+
 Trong container Node 22 (`docker run --rm -v "$PWD:/app" -w /app node:22-alpine ...`): `npm run typecheck`, `npm test`, `npx prisma migrate dev --name <ten>`.
 Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest run tests/integration`.
 
@@ -27,6 +30,7 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - `src/domain/` — logic thuần (token, trạng thái bình chọn, xếp hạng). Không import Next/Prisma.
 - `src/server/` — `import 'server-only'`: db, env, auth (admin JWT + Argon2), vote-session, cache & rate-limit trong bộ nhớ, audit, storage, images (sharp), `services/` (voting, tokens, results, content), `reports/` (PDF phiếu, PDF biên bản, Excel).
 - `src/app/(site)` trang công khai (nền tối, hiệu ứng) · `(vote)` luồng bình chọn (nền sáng, chữ to, không framer-motion) · `v/[token]` đích QR · `admin/(panel)` quản trị (server actions trong `actions.ts`) · `api/admin/*` upload, sinh phiếu PDF, export.
+- Nhạc nền: quản lý ở `/admin/music` (bảng `music_tracks`, tệp `storage/media/music/<uuid>.<ext>`, upload qua `POST /api/admin/music`), **không để nhạc trong source/git**; `src/server/music.ts` đọc DB, `MusicPlayer` ở root layout (ẩn ở `/admin`). Video: ưu tiên link YouTube (`YouTubeFacade`), tránh upload MP4 lên server. Tuyết (`Snowfall`) chạy trên mọi thiết bị, không phụ thuộc reduced-motion — theo yêu cầu người dùng.
 - `prisma/schema.prisma`, `prisma/seed.ts` · `deploy/` nginx + script backup/restore · `tests/unit`, `tests/integration`, `tests/load`.
 
 ## Quy tắc nghiệp vụ không được vi phạm
@@ -35,7 +39,8 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Ghi phiếu trong **một transaction**: `updateMany ... WHERE status='ACTIVE'` (kiểm tra `count === 1`) + `vote.create` với `UNIQUE(token_id)` (`src/server/services/voting.ts`). Gửi lại cùng sản phẩm → trả biên nhận (idempotent).
 - Token: CSPRNG 80 bit, Crockford Base32 16 ký tự; DB chỉ lưu `HMAC-SHA256(token, TOKEN_SECRET)` → PDF phiếu chỉ tải được 1 lần lúc tạo lô.
 - Nhận phiếu khi `votingStatus = OPEN` **và** trong `[votingStartAt, votingEndAt]` (`getVotingState`).
-- `resultsPublic = false` → `/api/results` trả 403, trang không lộ số phiếu.
+- Số phiếu + xếp hạng **luôn công khai**, `ResultsBoard` polling 10s (đã bỏ `resultsPublic/resultsRealtime` theo yêu cầu người dùng). "Nổi bật" = top 3 theo phiếu, bằng phiếu xét `viewCount` (`pickFeatured`, `listFeatured`); 0 phiếu thì không hiện. Không chọn tay.
+- Lượt xem: trình duyệt gọi `POST /api/views` (`ViewTracker`), vì HTML công khai bị Nginx microcache; `recordView` chống trùng 1 IP/sản phẩm/30 phút.
 - Thao tác nhạy cảm (mở/khóa, sinh/vô hiệu phiếu, hủy phiếu bầu, đổi kết quả, tài khoản): Super Admin + nhập lại mật khẩu (`requireSuperAdminWithPassword`) + `audit()`.
 - Soft delete (`deletedAt`); khi xóa mềm bản ghi có cột unique thì đổi tên/slug để không chặn bản ghi mới.
 - Giờ lưu UTC, hiển thị `Asia/Ho_Chi_Minh` (`src/lib/format.ts`).
@@ -46,7 +51,8 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Server action: `'use server'`, chỉ export hàm async; dạng `(prev: ActionState, form: FormData)` bọc bằng `runAction`, validate bằng Zod, gọi `requireAdmin/requireSuperAdmin…`, sau khi ghi gọi `invalidatePublic()` (hoặc `invalidate('r:')` cho kết quả) + `revalidatePath`.
 - Trang đều `force-dynamic` (root layout); hiệu năng dựa vào cache bộ nhớ (`cached()`, TTL 5–30s) + microcache Nginx 10s. Ứng dụng giả định **1 instance**.
 - Ảnh: biến thể `${key}-{400|800|1600}.webp`, dùng `mediaUrl/mediaSrcSet` và component `Picture`.
-- Màu: gold `#D4AF37`, burgundy, ink (đen), ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`).
+- Màu: burgundy `#3B0907`, burgundy-light `#542C2A`, pine `#113621`, ink `#0F0908`, gold `#D4AF37`, ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`); nền tối xen kẽ `.bg-museum` (ánh đỏ) / `.bg-forest` (ánh xanh).
+- Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn.
 - Trang `/v/*`, `/binh-chon`, `/vote` phải nhẹ: chữ ≥ 18px, nút ≥ 48px.
 
 ## Khác với tài liệu kiến trúc

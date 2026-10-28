@@ -26,7 +26,7 @@ export function ManualCodeForm() {
           {state.error}
         </p>
       )}
-      <button type="submit" disabled={pending} className="btn-gold mt-5 w-full !py-4 text-xl">
+      <button type="submit" disabled={pending} className="btn-glass mt-5 w-full !py-4 text-xl">
         {pending ? 'Đang kiểm tra…' : 'Tiếp tục'}
       </button>
     </form>

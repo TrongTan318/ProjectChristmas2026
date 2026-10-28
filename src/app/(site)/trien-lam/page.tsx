@@ -3,7 +3,7 @@ import { SectionHeading } from '@/components/site/Decor';
 import { ExhibitionFilter } from '@/components/site/ExhibitionGrid';
 import { ProductCard } from '@/components/site/ProductCard';
 import { requireActiveContest } from '@/server/contest';
-import { listProducts } from '@/server/services/content';
+import { listFeatured, listProducts } from '@/server/services/content';
 
 export const metadata: Metadata = {
   title: 'Triển lãm',
@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 
 export default async function ExhibitionPage() {
   const contest = await requireActiveContest();
-  const products = await listProducts(contest.id);
+  const [products, featured] = await Promise.all([listProducts(contest.id), listFeatured(contest.id)]);
+  const featuredIds = new Set(featured.map((p) => p.id));
   const classes = [...new Set(products.map((p) => p.team?.className).filter((c): c is string => !!c))];
 
   return (
@@ -30,7 +31,7 @@ export default async function ExhibitionPage() {
             items={products.map((p, i) => ({
               key: p.id,
               className: p.team?.className ?? '',
-              node: <ProductCard product={p} large priority={i < 3} />,
+              node: <ProductCard product={p} large priority={i < 3} featured={featuredIds.has(p.id)} />,
             }))}
           />
         </div>

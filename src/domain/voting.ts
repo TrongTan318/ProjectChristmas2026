@@ -49,6 +49,17 @@ export interface RankedItem {
   votes: number;
 }
 
+/**
+ * "Nổi bật": các sản phẩm nhiều phiếu nhất; bằng phiếu thì nhiều lượt xem hơn
+ * đứng trước, vẫn bằng thì giữ thứ tự ban đầu. Sản phẩm 0 phiếu không được chọn.
+ */
+export function pickFeatured<T extends RankedItem & { views: number }>(items: T[], limit = 3): T[] {
+  return items
+    .filter((i) => i.votes > 0)
+    .sort((a, b) => b.votes - a.votes || b.views - a.views)
+    .slice(0, limit);
+}
+
 /** Xếp hạng kiểu thi đấu: đồng phiếu đồng hạng (1, 1, 3...). */
 export function rank<T extends RankedItem>(items: T[]): (T & { rank: number; percent: number })[] {
   const total = items.reduce((s, i) => s + i.votes, 0);

@@ -88,12 +88,10 @@ export function Badge({ children, tone = 'zinc' }: { children: React.ReactNode; 
 }
 
 export const btn = {
-  primary:
-    'inline-flex items-center justify-center gap-2 rounded-lg bg-burgundy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-burgundy-light disabled:opacity-60',
-  secondary:
-    'inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm hover:bg-zinc-50 disabled:opacity-60',
-  danger:
-    'inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-60',
+  // Nút kính mờ (xem .glass trong globals.css); admin nằm trong .surface-light nên kính đậm hơn.
+  primary: 'glass glass-green inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold',
+  secondary: 'glass glass-clear inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium',
+  danger: 'glass glass-red inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold',
   ghost: 'inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:opacity-50',
 };
 

@@ -10,6 +10,9 @@ const TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.png': 'image/png',
   '.mp4': 'video/mp4',
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.ogg': 'audio/ogg',
 };
 
 /**

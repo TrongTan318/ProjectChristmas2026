@@ -50,7 +50,6 @@ export default async function ProductsPage() {
               </td>
               <td>
                 <Link href={`/admin/products/${p.id}`} className="font-medium text-burgundy hover:underline">{p.name}</Link>
-                {p.isFeatured && <span className="ml-2 text-amber-500" title="Nổi bật">★</span>}
               </td>
               <td className="text-zinc-600">{p.team ? `${p.team.name} · ${p.team.className}` : '—'}</td>
               <td className="text-zinc-600">{p._count.images} ảnh · {p._count.videos} video</td>

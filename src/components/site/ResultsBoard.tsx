@@ -8,21 +8,11 @@ import { formatDateTime, formatNumber } from '@/lib/format';
 
 const POLL_MS = 10_000;
 
-export function ResultsBoard({
-  initial,
-  realtime,
-  topN,
-  compact,
-}: {
-  initial: Results;
-  realtime: boolean;
-  topN?: number;
-  compact?: boolean;
-}) {
+/** Bảng xếp hạng công khai, tự làm mới mỗi 10 giây. */
+export function ResultsBoard({ initial, topN, compact }: { initial: Results; topN?: number; compact?: boolean }) {
   const [data, setData] = useState(initial);
 
   useEffect(() => {
-    if (!realtime) return;
     let stopped = false;
     const load = async () => {
       if (document.hidden) return;
@@ -38,7 +28,7 @@ export function ResultsBoard({
       stopped = true;
       clearInterval(timer);
     };
-  }, [realtime]);
+  }, []);
 
   const rows = topN ? data.ranking.slice(0, topN) : data.ranking;
   const max = Math.max(1, ...data.ranking.map((r) => r.votes));
@@ -62,15 +52,15 @@ export function ResultsBoard({
         </div>
       )}
 
-      <ol className={compact ? 'space-y-3' : 'mt-10 space-y-3'}>
+      <ol className={compact ? 'space-y-2 sm:space-y-3' : 'mt-10 space-y-3'}>
         {rows.map((r) => (
           <li key={r.productId}>
             <Link
               href={`/trien-lam/${r.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-gold/15 bg-ink-soft/70 p-3 transition hover:border-gold/50 sm:gap-4 sm:p-4"
+              className="group flex items-center gap-3 rounded-xl border border-gold/15 bg-ink-soft/70 px-3 py-2.5 transition hover:border-gold/50 sm:gap-4 sm:p-4"
             >
               <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-bold ${
+                className={`flex size-9 shrink-0 items-center justify-center rounded-full font-serif text-base font-bold sm:size-11 sm:text-lg ${
                   r.rank === 1
                     ? 'bg-gradient-to-b from-gold-light to-gold text-ink'
                     : r.rank === 2
@@ -93,7 +83,7 @@ export function ResultsBoard({
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="truncate font-serif text-lg font-semibold text-ivory group-hover:text-gold-light">
+                  <p className="truncate font-serif text-base font-semibold text-ivory group-hover:text-gold-light sm:text-lg">
                     {r.name}
                   </p>
                   <p className="shrink-0 font-semibold text-gold-light tabular-nums">
@@ -124,7 +114,7 @@ export function ResultsBoard({
               <div key={z.zoneId ?? 'none'} className="flex items-center gap-3">
                 <span className="w-36 shrink-0 truncate text-sm text-ivory/80 sm:w-48">{z.name}</span>
                 <div className="h-3 flex-1 overflow-hidden rounded-full bg-ivory/10">
-                  <div className="h-full rounded-full bg-burgundy-light" style={{ width: `${(z.votes / zoneMax) * 100}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#7a1e17] via-burgundy-light to-pine-light" style={{ width: `${(z.votes / zoneMax) * 100}%` }} />
                 </div>
                 <span className="w-12 text-right text-sm font-semibold text-gold-light tabular-nums">{z.votes}</span>
               </div>
@@ -134,8 +124,7 @@ export function ResultsBoard({
       )}
 
       <p className="mt-8 text-center text-xs text-ivory/50">
-        Cập nhật lúc {formatDateTime(data.updatedAt)}
-        {realtime ? ' · tự động làm mới mỗi 10 giây' : ''}
+        Cập nhật lúc {formatDateTime(data.updatedAt)} · tự động làm mới mỗi 10 giây
       </p>
     </div>
   );

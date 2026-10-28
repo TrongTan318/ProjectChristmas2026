@@ -25,7 +25,7 @@ function Notice({ code, extra }: { code: keyof typeof VOTE_MESSAGES; extra?: str
       <p className="mt-4 text-xl leading-relaxed text-ink/80">{msg.body}</p>
       {extra && <p className="mt-3 text-lg text-ink/70">{extra}</p>}
       <div className="mt-8 flex flex-col gap-3">
-        <Link href="/trien-lam" className="btn-gold !py-4 text-xl">Tham quan triển lãm</Link>
+        <Link href="/trien-lam" className="btn-glass !py-4 text-xl">Tham quan triển lãm</Link>
         <Link href="/vote" className="text-lg text-burgundy underline">Nhập mã phiếu khác</Link>
       </div>
     </div>
@@ -44,7 +44,7 @@ export default async function VotePage({ searchParams }: Props) {
       <div className="text-center">
         <h1 className="font-serif text-3xl font-bold text-burgundy-dark">Bình chọn bằng phiếu QR</h1>
         <p className="mt-4 text-xl text-ink/80">Vui lòng quét mã QR in trên phiếu bình chọn, hoặc nhập mã phiếu.</p>
-        <Link href="/vote" className="btn-gold mt-8 !py-4 text-xl">Nhập mã phiếu</Link>
+        <Link href="/vote" className="btn-glass mt-8 !py-4 text-xl">Nhập mã phiếu</Link>
       </div>
     );
   }

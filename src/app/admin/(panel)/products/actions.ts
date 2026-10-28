@@ -82,7 +82,6 @@ export async function updateProduct(_prev: ActionState, form: FormData) {
         ...data,
         slug: await uniqueSlug(before.contestId, data.slug || data.name, id),
         status: publish ? 'PUBLISHED' : 'DRAFT',
-        isFeatured: bool(form, 'isFeatured'),
       },
     });
     await audit({ userId: user.id, action: 'product.update', entityType: 'Product', entityId: id, before, after: product });

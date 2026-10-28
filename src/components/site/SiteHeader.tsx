@@ -32,7 +32,10 @@ export function SiteHeader({ title }: { title: string }) {
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        scrolled || open ? 'border-b border-gold/20 bg-ink/90 backdrop-blur-md' : 'bg-transparent',
+        // Khi cuộn: dải chuyển 3 màu Giáng Sinh (đỏ sẫm → nâu đỏ → xanh thông), hơi trong để thấy mờ phía sau
+        scrolled || open
+          ? 'border-b border-gold/25 bg-[linear-gradient(120deg,rgb(59_9_7/0.92),rgb(84_44_42/0.88)_50%,rgb(17_54_33/0.92))] shadow-[0_8px_24px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md'
+          : 'bg-transparent',
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
@@ -58,14 +61,14 @@ export function SiteHeader({ title }: { title: string }) {
               {item.label}
             </Link>
           ))}
-          <Link href="/vote" className="btn-gold ml-3 !px-5 !py-2 text-sm">
+          <Link href="/vote" className="btn-glass ml-3 !px-5 !py-2 text-sm">
             Bình chọn
           </Link>
         </nav>
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full text-gold-light md:hidden"
+          className="glass glass-clear inline-flex h-11 w-11 items-center justify-center rounded-full md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? 'Đóng menu' : 'Mở menu'}
@@ -91,7 +94,7 @@ export function SiteHeader({ title }: { title: string }) {
               {item.label}
             </Link>
           ))}
-          <Link href="/vote" className="btn-gold mt-4 w-full text-lg">
+          <Link href="/vote" className="btn-glass mt-4 w-full text-lg">
             Bình chọn ngay
           </Link>
         </nav>

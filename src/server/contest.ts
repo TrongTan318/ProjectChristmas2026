@@ -21,6 +21,12 @@ export type Contest = NonNullable<Awaited<ReturnType<typeof getActiveContest>>>;
 export const siteSettingsSchema = z.object({
   heroTitle: z.string().max(200).default('Hội Thi Hang Đá Giáng Sinh 2026'),
   heroSubtitle: z.string().max(400).default('Triển lãm trực tuyến — Giáo xứ Bình Thới'),
+  /** Ảnh nền trang chủ (chỉ đổi nền, không đổi chữ). Banner có ảnh riêng thì ưu tiên ảnh banner. */
+  heroImageKey: z
+    .string()
+    .regex(/^content\/[0-9a-f-]{36}$/, 'Ảnh nền không hợp lệ')
+    .or(z.literal(''))
+    .default(''),
   introTitle: z.string().max(200).default('Ngôi Lời đã làm người'),
   introBody: z
     .string()

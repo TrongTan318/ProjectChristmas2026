@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </form>
         </div>
       </aside>
-      <div className="min-w-0 flex-1">
+      <div className="surface-light min-w-0 flex-1">
         <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2 text-sm lg:hidden">
           <span className="truncate">{user.name} · {user.role.name}</span>
           <form action={logout}>

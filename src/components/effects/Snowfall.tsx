@@ -13,24 +13,16 @@ interface Flake {
 }
 
 /**
- * Tuyết rơi nhẹ bằng canvas. Tự tắt khi: người dùng bật giảm chuyển động,
- * thiết bị yếu (RAM ≤ 2GB / ≤ 2 nhân), tab bị ẩn, hoặc người dùng tắt hiệu ứng.
+ * Tuyết rơi bằng canvas, hiện trên mọi thiết bị (không phụ thuộc cài đặt giảm
+ * chuyển động của hệ điều hành). Chỉ tắt khi admin tắt hoặc người xem bấm nút
+ * tắt ở footer; tạm dừng khi tab bị ẩn.
  */
 export function Snowfall({ enabled }: { enabled: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    const decide = () => {
-      const reduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      const nav = navigator as Navigator & { deviceMemory?: number };
-      const weak =
-        (nav.deviceMemory ?? 4) <= 2 ||
-        (navigator.hardwareConcurrency ?? 4) <= 2;
-      setActive(enabled && !reduced && !weak && readEffectsPreference());
-    };
+    const decide = () => setActive(enabled && readEffectsPreference());
     decide();
     window.addEventListener(EFFECTS_EVENT, decide);
     return () => window.removeEventListener(EFFECTS_EVENT, decide);

@@ -69,7 +69,7 @@ export function VoteClient({ products, serial, initialSelected }: { products: It
         </dl>
         <p className="mt-6 font-serif text-lg text-ink/70 italic">Xin Chúa Hài Đồng chúc lành cho bạn và gia đình. Giáng Sinh an lành!</p>
         <div className="mt-8 flex flex-col gap-3">
-          <Link href="/trien-lam" className="btn-gold !py-4 text-xl">Tiếp tục tham quan triển lãm</Link>
+          <Link href="/trien-lam" className="btn-glass !py-4 text-xl">Tiếp tục tham quan triển lãm</Link>
           <Link href="/ket-qua" className="text-lg text-burgundy underline">Xem kết quả</Link>
         </div>
       </div>
@@ -85,11 +85,11 @@ export function VoteClient({ products, serial, initialSelected }: { products: It
         <p className="mt-4 text-xl text-ink/80">{msg.body}</p>
         <div className="mt-8 flex flex-col gap-3">
           {canRetry ? (
-            <button type="button" className="btn-gold !py-4 text-xl" onClick={() => { setResult(null); setSelected(null); }}>
+            <button type="button" className="btn-glass !py-4 text-xl" onClick={() => { setResult(null); setSelected(null); }}>
               Chọn lại
             </button>
           ) : (
-            <Link href="/vote" className="btn-gold !py-4 text-xl">Quét / nhập mã phiếu</Link>
+            <Link href="/vote" className="btn-glass !py-4 text-xl">Quét / nhập mã phiếu</Link>
           )}
           <Link href="/trien-lam" className="text-lg text-burgundy underline">Tham quan triển lãm</Link>
         </div>
@@ -120,14 +120,14 @@ export function VoteClient({ products, serial, initialSelected }: { products: It
           </p>
         )}
         <div className="mt-6 flex flex-col gap-4">
-          <button type="button" onClick={confirm} disabled={pending} className="btn-gold min-h-16 !py-5 text-2xl">
+          <button type="button" onClick={confirm} disabled={pending} className="btn-glass min-h-16 !py-5 text-2xl">
             {pending ? 'Đang gửi…' : '✓ Xác nhận bình chọn'}
           </button>
           <button
             type="button"
             onClick={() => setSelected(null)}
             disabled={pending}
-            className="min-h-14 rounded-full border-2 border-ink/30 bg-white py-4 text-xl font-semibold text-ink"
+            className="btn-glass-clear min-h-14 py-4 text-xl"
           >
             ← Chọn lại
           </button>
@@ -149,10 +149,10 @@ export function VoteClient({ products, serial, initialSelected }: { products: It
               <p className="text-sm font-semibold tracking-widest text-burgundy uppercase">{p.className}</p>
               <p className="mt-1 font-serif text-2xl leading-snug font-bold">{p.name}</p>
               <div className="mt-4 flex gap-3">
-                <button type="button" onClick={() => { setSelected(p.id); window.scrollTo({ top: 0 }); }} className="btn-gold min-h-14 flex-1 text-xl">
+                <button type="button" onClick={() => { setSelected(p.id); window.scrollTo({ top: 0 }); }} className="btn-glass min-h-14 flex-1 text-xl">
                   Chọn
                 </button>
-                <Link href={`/trien-lam/${p.slug}`} className="flex min-h-14 items-center rounded-full border-2 border-ink/25 px-5 text-lg font-medium">
+                <Link href={`/trien-lam/${p.slug}`} className="btn-glass-clear min-h-14 px-5 text-lg">
                   Xem
                 </Link>
               </div>

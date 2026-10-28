@@ -19,6 +19,15 @@ export function formatDate(date: Date | string | null | undefined): string {
   );
 }
 
+/** Ngày và tháng (giờ Việt Nam) cho tờ lịch nhỏ: { day: '26', month: '10' }. */
+export function dateParts(date: Date | string): { day: string; month: string } {
+  const parts = new Intl.DateTimeFormat('vi-VN', { timeZone: TZ, day: '2-digit', month: '2-digit' }).formatToParts(new Date(date));
+  return {
+    day: parts.find((p) => p.type === 'day')?.value ?? '',
+    month: parts.find((p) => p.type === 'month')?.value ?? '',
+  };
+}
+
 export function formatNumber(n: number): string {
   return new Intl.NumberFormat('vi-VN').format(n);
 }

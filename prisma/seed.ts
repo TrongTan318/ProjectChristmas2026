@@ -158,7 +158,6 @@ async function seedDemo(contestId: string) {
           'Thiên Chúa đã chọn sinh ra trong cảnh nghèo hèn của hang đá Bêlem để ở cùng con người. Hang đá nhắc chúng ta sống khiêm nhường, đơn sơ và yêu thương.',
         christmasMessage: 'Chúa đến để mang bình an cho mọi tâm hồn thiện chí.\nHãy mở cửa lòng đón Chúa Hài Đồng.',
         status: 'PUBLISHED',
-        isFeatured: i < 3,
         sortOrder: i + 1,
       },
     });

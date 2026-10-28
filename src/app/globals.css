@@ -4,11 +4,15 @@
   --color-gold: #d4af37;
   --color-gold-light: #f3dc8a;
   --color-gold-dark: #9c7a1c;
-  --color-burgundy: #6d1a2b;
-  --color-burgundy-light: #8e2a3e;
-  --color-burgundy-dark: #3d0a15;
-  --color-ink: #0d0a0b;
-  --color-ink-soft: #1a1416;
+  /* Bảng màu Giáng Sinh: đỏ sẫm #3B0907 · nâu đỏ #542C2A · xanh thông #113621 (+ vàng kim, ngà) */
+  --color-burgundy: #3b0907;
+  --color-burgundy-light: #542c2a;
+  --color-burgundy-dark: #240504;
+  --color-pine: #113621;
+  --color-pine-light: #1f5236;
+  --color-pine-dark: #0a2114;
+  --color-ink: #0f0908;
+  --color-ink-soft: #22130f;
   --color-ivory: #fbf8f1;
   --color-parchment: #f3ecdc;
 
@@ -18,6 +22,16 @@
   --animate-flicker: flicker 3.2s ease-in-out infinite;
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-twinkle: twinkle 1.8s ease-in-out infinite;
+  --animate-gift-bounce: gift-bounce 2.6s ease-in-out infinite;
+  --animate-gift-lid: gift-lid 2.6s ease-in-out infinite;
+  --animate-star-glow: star-glow 3.2s ease-in-out infinite;
+  --animate-bulb: bulb 2.4s ease-in-out infinite;
+  --animate-sway: sway 4.5s ease-in-out infinite;
+  --animate-gold-sweep: gold-sweep 6s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 40s linear infinite;
+  --animate-wobble: wobble 3.6s ease-in-out infinite;
+  --animate-wave: wave 1.8s ease-in-out infinite;
 
   @keyframes flicker {
     0%, 100% { opacity: 0.85; transform: scale(1); }
@@ -33,6 +47,55 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
   }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+  /* Nhảy lên, chạm đất hơi "nén" lại rồi nảy nhẹ */
+  @keyframes gift-bounce {
+    0%, 55%, 100% { transform: translateY(0) scale(1, 1); }
+    15% { transform: translateY(-16px) scale(0.96, 1.05); }
+    28% { transform: translateY(0) scale(1.08, 0.9); }
+    38% { transform: translateY(-5px) scale(1, 1); }
+    46% { transform: translateY(0) scale(1.03, 0.97); }
+  }
+  @keyframes gift-lid {
+    0%, 8%, 30%, 100% { transform: translateY(0) rotate(0); }
+    16% { transform: translateY(-7px) rotate(-10deg); }
+  }
+  /* Hào quang ngôi sao Bêlem "thở" */
+  @keyframes star-glow {
+    0%, 100% { opacity: 0.6; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  /* Bóng đèn dây chớp tắt; 3 nhóm màu lệch nhịp → hiệu ứng đèn đuổi */
+  @keyframes bulb {
+    0%, 40% { opacity: 1; }
+    50%, 88% { opacity: 0.18; }
+    100% { opacity: 1; }
+  }
+  /* Trái châu đung đưa quanh điểm treo */
+  @keyframes sway {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  @keyframes spin-slow {
+    to { transform: rotate(360deg); }
+  }
+  /* Người tuyết lắc lư nhẹ, tay vẫy chào */
+  @keyframes wobble {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-22deg); }
+  }
+  /* Vệt sáng vàng lướt qua chữ rồi nghỉ */
+  @keyframes gold-sweep {
+    0% { background-position: 100% 0; }
+    40%, 100% { background-position: 0% 0; }
+  }
 }
 
 :root {
@@ -42,6 +105,14 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Cuộn từng trang: chỉ bật trên trang có [data-snap-page] (trang chủ). */
+html:has([data-snap-page]) {
+  scroll-snap-type: y mandatory;
+}
+html:has([data-snap-page]) footer {
+  scroll-snap-align: end;
 }
 
 body {
@@ -70,11 +141,46 @@ body {
     color: transparent;
   }
 
+  /* Chữ đỏ sẫm trên nền sáng, thỉnh thoảng có vệt mạ vàng lướt qua.
+     background-clip: text không vẽ phần ngoài khung chữ → chừa đệm dọc cho dấu tiếng Việt. */
+  .text-gold-sweep {
+    background: linear-gradient(
+      100deg,
+      var(--color-burgundy-dark) 0 42%,
+      #9c7a1c 46%,
+      #f3dc8a 50%,
+      #9c7a1c 54%,
+      var(--color-burgundy-dark) 58% 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-block: 0.12em;
+    animation: var(--animate-gold-sweep);
+  }
+
+  /* Nền tối ánh đỏ: đỏ sẫm trên cùng, nâu đỏ và xanh thông lan ở hai góc dưới */
   .bg-museum {
     background:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgb(109 26 43 / 0.55), transparent 70%),
-      radial-gradient(ellipse 60% 50% at 50% 100%, rgb(212 175 55 / 0.08), transparent 70%),
+      radial-gradient(ellipse 85% 60% at 50% 0%, rgb(59 9 7 / 0.95), transparent 72%),
+      radial-gradient(ellipse 55% 45% at 0% 100%, rgb(17 54 33 / 0.55), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 100% 100%, rgb(84 44 42 / 0.45), transparent 70%),
       var(--color-ink);
+  }
+
+  /* Nền tối ánh xanh thông, xen kẽ với .bg-museum */
+  .bg-forest {
+    background:
+      radial-gradient(ellipse 85% 60% at 50% 0%, rgb(17 54 33 / 0.95), transparent 72%),
+      radial-gradient(ellipse 55% 45% at 100% 100%, rgb(59 9 7 / 0.55), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 0% 100%, rgb(84 44 42 / 0.4), transparent 70%),
+      var(--color-ink);
+  }
+
+  /* Dải chuyển 3 màu (đỏ sẫm → nâu đỏ → xanh thông) cho chân trang, đường viền nhấn */
+  .bg-christmas-band {
+    background: linear-gradient(120deg, #3b0907 0%, #542c2a 50%, #113621 100%);
   }
 
   .bg-parchment-texture {
@@ -98,7 +204,7 @@ body {
   .frame-gold > .frame-inner {
     border-radius: 2px;
     overflow: hidden;
-    box-shadow: inset 0 0 0 3px rgb(61 10 21 / 0.9), inset 0 0 18px rgb(0 0 0 / 0.6);
+    box-shadow: inset 0 0 0 3px rgb(59 9 7 / 0.9), inset 0 0 18px rgb(0 0 0 / 0.6);
     background: var(--color-ink-soft);
   }
 
@@ -114,8 +220,8 @@ body {
   .stained-glass {
     background:
       conic-gradient(from 0deg at 50% 50%,
-        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4),
-        rgb(109 26 43 / 0.55), rgb(212 175 55 / 0.35), rgb(30 64 120 / 0.45), rgb(20 90 60 / 0.4), rgb(109 26 43 / 0.55));
+        rgb(120 26 20 / 0.6), rgb(212 175 55 / 0.35), rgb(84 44 42 / 0.5), rgb(31 82 54 / 0.5),
+        rgb(120 26 20 / 0.6), rgb(212 175 55 / 0.35), rgb(84 44 42 / 0.5), rgb(31 82 54 / 0.5), rgb(120 26 20 / 0.6));
     mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 72%);
   }
 
@@ -125,7 +231,45 @@ body {
     animation: var(--animate-flicker);
   }
 
-  .btn-gold {
+  /* ===== Nút kính mờ (glassmorphism) =====
+     Chất liệu: .glass + màu .glass-green (nút chính, xanh cây thông) | .glass-clear (nút phụ) | .glass-red (xóa).
+     Nút công khai dựng sẵn: .btn-glass (= kính xanh) và .btn-glass-clear (= kính trong).
+     Trong vùng nền sáng (.surface-light: trang bình chọn, admin) kính đậm hơn để vẫn dễ nhận ra. */
+  .glass,
+  .btn-glass,
+  .btn-glass-clear {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  /* Vệt sáng phản chiếu ở nửa trên mặt kính */
+  .glass::before,
+  .btn-glass::before,
+  .btn-glass-clear::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 50% 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0));
+  }
+  .glass:hover:not(:disabled),
+  .btn-glass:hover:not(:disabled),
+  .btn-glass-clear:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .glass:disabled,
+  .btn-glass:disabled,
+  .btn-glass-clear:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-glass,
+  .btn-glass-clear {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -133,49 +277,106 @@ body {
     border-radius: 9999px;
     padding: 0.85rem 1.75rem;
     font-weight: 600;
-    color: var(--color-ink);
-    background: linear-gradient(180deg, #f3dc8a, #d4af37 55%, #b38f23);
-    box-shadow: 0 8px 24px -10px rgb(212 175 55 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.6);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s;
-  }
-  .btn-gold:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 12px 28px -10px rgb(212 175 55 / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.6);
-  }
-  .btn-gold:disabled {
-    opacity: 0.6;
-    transform: none;
   }
 
-  .btn-outline-gold {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 9999px;
-    padding: 0.8rem 1.6rem;
-    font-weight: 600;
-    color: var(--color-gold-light);
-    border: 1.5px solid rgb(212 175 55 / 0.7);
-    background: rgb(13 10 11 / 0.35);
-    backdrop-filter: blur(4px);
-    transition: background 0.2s, color 0.2s;
+  /* Kính xanh cây thông (nút chính) */
+  .glass-green,
+  .btn-glass {
+    color: var(--color-ivory);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+    background: linear-gradient(180deg, rgb(46 125 79 / 0.55), rgb(17 54 33 / 0.72));
+    border: 1px solid rgb(134 214 160 / 0.45);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 10px 26px -12px rgb(31 120 70 / 0.9);
   }
-  .btn-outline-gold:hover {
-    background: rgb(212 175 55 / 0.15);
+  .glass-green:hover:not(:disabled),
+  .btn-glass:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgb(58 152 97 / 0.65), rgb(22 72 44 / 0.8));
+    border-color: rgb(165 232 186 / 0.7);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 14px 30px -12px rgb(46 160 95 / 0.95);
+  }
+
+  /* Kính trong (nút phụ) */
+  .glass-clear,
+  .btn-glass-clear {
+    color: var(--color-gold-light);
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.25);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 8px 22px -14px rgb(0 0 0 / 0.8);
+  }
+  .glass-clear:hover:not(:disabled),
+  .btn-glass-clear:hover:not(:disabled) {
     color: #fff;
+    background: rgb(255 255 255 / 0.15);
+    border-color: rgb(243 220 138 / 0.6);
+  }
+
+  /* Kính đỏ (thao tác xóa / nguy hiểm) */
+  .glass-red {
+    color: #fff;
+    background: linear-gradient(180deg, rgb(160 40 30 / 0.6), rgb(59 9 7 / 0.78));
+    border: 1px solid rgb(240 140 120 / 0.45);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 10px 24px -12px rgb(160 40 30 / 0.9);
+  }
+  .glass-red:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgb(185 50 38 / 0.7), rgb(80 14 10 / 0.85));
+  }
+
+  /* Nền sáng: kính đậm hơn, nút phụ chữ tối */
+  .surface-light .glass-green,
+  .surface-light .btn-glass {
+    background: linear-gradient(180deg, rgb(46 125 79 / 0.9), rgb(17 54 33 / 0.96));
+    border-color: rgb(17 54 33 / 0.55);
+  }
+  .surface-light .glass-clear,
+  .surface-light .btn-glass-clear {
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.65);
+    border-color: rgb(15 9 8 / 0.22);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 6px 18px -10px rgb(15 9 8 / 0.35);
+  }
+  .surface-light .glass-clear:hover:not(:disabled),
+  .surface-light .btn-glass-clear:hover:not(:disabled) {
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.9);
+    border-color: rgb(17 54 33 / 0.5);
+  }
+  .surface-light .glass-red {
+    background: linear-gradient(180deg, rgb(185 45 35 / 0.92), rgb(110 20 14 / 0.96));
   }
 
   .prose-museum p + p {
     margin-top: 1em;
   }
+
+  /* Một "trang" khi cuộn từng trang: cao tối thiểu 1 màn hình, nội dung ở giữa, chừa chỗ cho header cố định. */
+  .snap-page {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 5rem;
+    /* Điện thoại: chừa chỗ cho nút nhạc nổi ở góc dưới */
+    padding-bottom: 6rem;
+  }
+  @media (width >= 40rem) {
+    .snap-page {
+      padding-bottom: 2.5rem;
+    }
+  }
+  /* Trang dài hơn màn hình (Triển lãm, Bảng xếp hạng): dừng ở đầu mục, bên trong cuộn mượt bình thường. */
+  .snap-page-long {
+    justify-content: flex-start;
+    padding-bottom: 6rem;
+  }
 }
 
+/* Trang trí Giáng Sinh (.motion-keep) vẫn chạy như tuyết rơi — theo yêu cầu người dùng. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.motion-keep, .motion-keep *),
+  *:not(.motion-keep, .motion-keep *)::before,
+  *:not(.motion-keep, .motion-keep *)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
