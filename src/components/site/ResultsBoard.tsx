@@ -52,15 +52,15 @@ export function ResultsBoard({ initial, topN, compact }: { initial: Results; top
         </div>
       )}
 
-      <ol className={compact ? 'space-y-3' : 'mt-10 space-y-3'}>
+      <ol className={compact ? 'space-y-2 sm:space-y-3' : 'mt-10 space-y-3'}>
         {rows.map((r) => (
           <li key={r.productId}>
             <Link
               href={`/trien-lam/${r.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-gold/15 bg-ink-soft/70 p-3 transition hover:border-gold/50 sm:gap-4 sm:p-4"
+              className="group flex items-center gap-3 rounded-xl border border-gold/15 bg-ink-soft/70 px-3 py-2.5 transition hover:border-gold/50 sm:gap-4 sm:p-4"
             >
               <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-bold ${
+                className={`flex size-9 shrink-0 items-center justify-center rounded-full font-serif text-base font-bold sm:size-11 sm:text-lg ${
                   r.rank === 1
                     ? 'bg-gradient-to-b from-gold-light to-gold text-ink'
                     : r.rank === 2
@@ -83,7 +83,7 @@ export function ResultsBoard({ initial, topN, compact }: { initial: Results; top
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="truncate font-serif text-lg font-semibold text-ivory group-hover:text-gold-light">
+                  <p className="truncate font-serif text-base font-semibold text-ivory group-hover:text-gold-light sm:text-lg">
                     {r.name}
                   </p>
                   <p className="shrink-0 font-semibold text-gold-light tabular-nums">

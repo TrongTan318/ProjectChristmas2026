@@ -57,7 +57,8 @@ export function SiteFooter({ settings, organizer }: { settings: SiteSettings; or
         </div>
       </div>
       <Ornament className="pb-4" />
-      <div className="flex flex-col items-center gap-3 pb-8">
+      {/* Điện thoại: chừa chỗ cho nút nhạc nổi ở góc dưới */}
+      <div className="flex flex-col items-center gap-3 pb-24 sm:pb-8">
         <EffectsToggle />
         <p className="text-center text-xs text-ivory/50">© 2026 {organizer}. Ad Majorem Dei Gloriam.</p>
       </div>

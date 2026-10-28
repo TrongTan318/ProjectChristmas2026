@@ -26,6 +26,9 @@
   --animate-gift-bounce: gift-bounce 2.6s ease-in-out infinite;
   --animate-gift-lid: gift-lid 2.6s ease-in-out infinite;
   --animate-star-glow: star-glow 3.2s ease-in-out infinite;
+  --animate-bulb: bulb 2.4s ease-in-out infinite;
+  --animate-sway: sway 4.5s ease-in-out infinite;
+  --animate-gold-sweep: gold-sweep 6s ease-in-out infinite;
 
   @keyframes flicker {
     0%, 100% { opacity: 0.85; transform: scale(1); }
@@ -62,6 +65,22 @@
     0%, 100% { opacity: 0.6; transform: scale(0.92); }
     50% { opacity: 1; transform: scale(1.08); }
   }
+  /* Bóng đèn dây chớp tắt; 3 nhóm màu lệch nhịp → hiệu ứng đèn đuổi */
+  @keyframes bulb {
+    0%, 40% { opacity: 1; }
+    50%, 88% { opacity: 0.18; }
+    100% { opacity: 1; }
+  }
+  /* Trái châu đung đưa quanh điểm treo */
+  @keyframes sway {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  /* Vệt sáng vàng lướt qua chữ rồi nghỉ */
+  @keyframes gold-sweep {
+    0% { background-position: 100% 0; }
+    40%, 100% { background-position: 0% 0; }
+  }
 }
 
 :root {
@@ -71,6 +90,14 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Cuộn từng trang: chỉ bật trên trang có [data-snap-page] (trang chủ). */
+html:has([data-snap-page]) {
+  scroll-snap-type: y mandatory;
+}
+html:has([data-snap-page]) footer {
+  scroll-snap-align: end;
 }
 
 body {
@@ -97,6 +124,25 @@ body {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* Chữ đỏ sẫm trên nền sáng, thỉnh thoảng có vệt mạ vàng lướt qua.
+     background-clip: text không vẽ phần ngoài khung chữ → chừa đệm dọc cho dấu tiếng Việt. */
+  .text-gold-sweep {
+    background: linear-gradient(
+      100deg,
+      var(--color-burgundy-dark) 0 42%,
+      #9c7a1c 46%,
+      #f3dc8a 50%,
+      #9c7a1c 54%,
+      var(--color-burgundy-dark) 58% 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-block: 0.12em;
+    animation: var(--animate-gold-sweep);
   }
 
   /* Nền tối ánh đỏ: đỏ sẫm trên cùng, nâu đỏ và xanh thông lan ở hai góc dưới */
@@ -285,6 +331,29 @@ body {
 
   .prose-museum p + p {
     margin-top: 1em;
+  }
+
+  /* Một "trang" khi cuộn từng trang: cao tối thiểu 1 màn hình, nội dung ở giữa, chừa chỗ cho header cố định. */
+  .snap-page {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 5rem;
+    /* Điện thoại: chừa chỗ cho nút nhạc nổi ở góc dưới */
+    padding-bottom: 6rem;
+  }
+  @media (width >= 40rem) {
+    .snap-page {
+      padding-bottom: 2.5rem;
+    }
+  }
+  /* Trang dài hơn màn hình (Triển lãm, Bảng xếp hạng): dừng ở đầu mục, bên trong cuộn mượt bình thường. */
+  .snap-page-long {
+    justify-content: flex-start;
+    padding-bottom: 6rem;
   }
 }
 

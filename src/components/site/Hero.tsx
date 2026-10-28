@@ -48,7 +48,7 @@ export function Hero({
   const imageKey = slide.imageKey ?? backgroundKey ?? null;
 
   return (
-    <section ref={ref} className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-museum">
+    <section ref={ref} data-snap-page className="relative isolate flex min-h-[100svh] snap-start snap-always items-center overflow-hidden bg-museum">
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10">
         <AnimatePresence mode="sync">
           {imageKey && (
