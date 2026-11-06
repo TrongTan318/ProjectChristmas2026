@@ -135,6 +135,31 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
     if (hidden) audioRef.current?.pause();
   }, [hidden]);
 
+  // Rời tab / chuyển app / khóa màn hình: tạm dừng (điện thoại không phát ngầm nữa);
+  // quay lại thì phát tiếp, chỉ khi lúc rời đi nhạc đang phát.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    let resumeOnReturn = false;
+    const resumeOnTouch = () => void audio.play().catch(() => {});
+    const onVisibility = () => {
+      if (document.hidden) {
+        resumeOnReturn = !audio.paused;
+        if (resumeOnReturn) audio.pause();
+        return;
+      }
+      if (!resumeOnReturn || !readPreference() || location.pathname.startsWith('/admin')) return;
+      resumeOnReturn = false;
+      // Trình duyệt chặn phát lại khi chưa chạm: phát ở lần chạm kế tiếp.
+      audio.play().catch(() => window.addEventListener('pointerdown', resumeOnTouch, { once: true, capture: true }));
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pointerdown', resumeOnTouch, true);
+    };
+  }, [tracks]);
+
   // Ô âm lượng: chạm ra ngoài hoặc bấm Esc thì đóng.
   useEffect(() => {
     if (!volumeOpen) return;
