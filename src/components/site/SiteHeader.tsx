@@ -27,13 +27,16 @@ export function SiteHeader({ title }: { title: string }) {
   useEffect(() => setOpen(false), [pathname]);
 
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+  // Chỉ trong suốt khi nằm trên ảnh nền tối của trang chủ; các trang khác có thể mở đầu bằng nền sáng
+  // (vd. Tin tức) nên luôn có nền để chữ menu không bị chìm.
+  const solid = scrolled || open || pathname !== '/';
 
   return (
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        // Khi cuộn: dải chuyển 3 màu Giáng Sinh (đỏ sẫm → nâu đỏ → xanh thông), hơi trong để thấy mờ phía sau
-        scrolled || open
+        // Dải chuyển 3 màu Giáng Sinh (đỏ sẫm → nâu đỏ → xanh thông), hơi trong để thấy mờ phía sau
+        solid
           ? 'border-b border-gold/25 bg-[linear-gradient(120deg,rgb(59_9_7/0.92),rgb(84_44_42/0.88)_50%,rgb(17_54_33/0.92))] shadow-[0_8px_24px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md'
           : 'bg-transparent',
       )}
@@ -54,8 +57,10 @@ export function SiteHeader({ title }: { title: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                isActive(item.href) ? 'text-gold-light' : 'text-ivory/80 hover:text-gold-light',
+                'rounded-full px-4 py-2 text-[15px] font-semibold transition-colors',
+                isActive(item.href)
+                  ? 'bg-gold/15 text-gold-light ring-1 ring-gold/50'
+                  : 'text-ivory hover:bg-ivory/10 hover:text-gold-light',
               )}
             >
               {item.label}
