@@ -1,24 +1,13 @@
-import { createHmac, randomBytes } from 'node:crypto';
+import { createHmac, randomInt } from 'node:crypto';
 
 /** Crockford Base32: bỏ I, L, O, U để tránh đọc nhầm khi nhập tay. */
 const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-export const TOKEN_LENGTH = 16; // 16 ký tự × 5 bit = 80 bit entropy
-const TOKEN_PATTERN = /^[0-9A-HJKMNP-TV-Z]{16}$/;
+export const TOKEN_LENGTH = 5; // 5 ký tự × 5 bit = 25 bit (~33,5 triệu mã)
+const TOKEN_PATTERN = /^[0-9A-HJKMNP-TV-Z]{5}$/;
 
 export function generateToken(): string {
-  const bytes = randomBytes(10);
   let out = '';
-  let buffer = 0;
-  let bits = 0;
-  for (const byte of bytes) {
-    buffer = (buffer << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      out += ALPHABET[(buffer >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-    buffer &= (1 << bits) - 1;
-  }
+  for (let i = 0; i < TOKEN_LENGTH; i++) out += ALPHABET[randomInt(ALPHABET.length)];
   return out;
 }
 
@@ -33,7 +22,7 @@ export function normalizeToken(input: string): string | null {
 }
 
 export function formatToken(token: string): string {
-  return token.match(/.{1,4}/g)?.join('-') ?? token;
+  return token;
 }
 
 export function hashToken(token: string, secret: string): string {

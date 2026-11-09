@@ -261,7 +261,7 @@ Giáo xứ Bình Thới tổ chức hội thi làm hang đá Giáng Sinh cho kho
 
 | ID | Yêu cầu |
 |---|---|
-| FR-VOTE-01 | Sinh token bằng CSPRNG, ≥ 80 bit entropy, mã hóa Crockford Base32 16 ký tự (hiển thị `XXXX-XXXX-XXXX-XXXX`) |
+| FR-VOTE-01 | Sinh token bằng CSPRNG, mã hóa Crockford Base32 5 ký tự (25 bit, hiển thị `XXXXX`) |
 | FR-VOTE-02 | DB chỉ lưu `HMAC-SHA256(token, server_secret)`; không lưu token gốc |
 | FR-VOTE-03 | Mỗi token có số seri công khai (in trên phiếu) để tra cứu/vô hiệu mà không cần token gốc |
 | FR-VOTE-04 | Trạng thái token: `ACTIVE` → `USED` hoặc `REVOKED`; không có chuyển trạng thái ngược lại |

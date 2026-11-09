@@ -16,8 +16,8 @@ export function ManualCodeForm() {
         autoCapitalize="characters"
         spellCheck={false}
         inputMode="text"
-        maxLength={24}
-        placeholder="XXXX-XXXX-XXXX-XXXX"
+        maxLength={8}
+        placeholder="XXXXX"
         className="w-full rounded-xl border-2 border-ink/30 bg-ivory px-4 py-4 text-center font-mono text-2xl tracking-widest uppercase focus:border-burgundy focus:outline-none"
         aria-describedby={state?.error ? 'code-error' : undefined}
       />

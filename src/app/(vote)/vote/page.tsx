@@ -27,7 +27,7 @@ export default function ManualVotePage() {
 
       <div className="mt-10 rounded-2xl border-2 border-gold bg-white p-6 shadow-md">
         <h2 className="text-2xl font-bold text-burgundy-dark">Không quét được mã QR?</h2>
-        <p className="mt-2 text-ink/75">Nhập mã 16 ký tự in trên phiếu (không cần gõ dấu gạch ngang):</p>
+        <p className="mt-2 text-ink/75">Nhập mã 5 ký tự in trên phiếu:</p>
         <ManualCodeForm />
       </div>
     </div>
