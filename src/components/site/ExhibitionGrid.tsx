@@ -58,9 +58,22 @@ export function ExhibitionFilter({
           ))}
         </div>
       </div>
-      <div ref={gridRef} className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Đang lọc theo lớp: dùng flex canh giữa để thẻ không bị dồn sang cột trái (tablet/laptop),
+          độ rộng mỗi thẻ giữ bằng một cột của lưới. */}
+      <div
+        ref={gridRef}
+        className={cn(
+          'gap-x-8 gap-y-14',
+          active ? 'flex flex-col sm:flex-row sm:flex-wrap sm:justify-center' : 'grid sm:grid-cols-2 lg:grid-cols-3',
+        )}
+      >
         {visible.map((c) => (
-          <div key={c.key}>{c.node}</div>
+          <div
+            key={c.key}
+            className={cn(active && 'sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]')}
+          >
+            {c.node}
+          </div>
         ))}
       </div>
       {visible.length === 0 && <p className="text-center text-ivory/60">Chưa có sản phẩm nào.</p>}
