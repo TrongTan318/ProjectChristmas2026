@@ -6,13 +6,13 @@ import { formatDateTime } from '@/lib/format';
 import { isSuperAdmin, requireAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
-import { invalidateVote } from './actions';
+import { invalidateVote, resetVote } from './actions';
 
 const PAGE_SIZE = 50;
 /** Nhiều phiếu từ cùng một IP: nghi vấn (Wi-Fi nhà thờ dùng chung IP nên chỉ để tham khảo). */
 const SUSPICIOUS_PER_IP = 15;
 
-type Search = { product?: string; status?: string; suspicious?: string; page?: string };
+type Search = { product?: string; status?: string; suspicious?: string; serial?: string; page?: string };
 
 export default async function VotesPage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requireAdmin();
@@ -28,10 +28,12 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
     having: { ipHash: { _count: { gte: SUSPICIOUS_PER_IP } } },
   });
   const suspiciousIps = new Set(ipGroups.map((g) => g.ipHash!));
+  const serial = sp.serial && /^\d+$/.test(sp.serial.trim()) ? Number(sp.serial.trim()) : undefined;
 
   const where: Prisma.VoteWhereInput = {
     contestId: contest.id,
     deletedAt: null,
+    token: serial !== undefined ? { serial } : undefined,
     productId: sp.product || undefined,
     status: sp.status === 'VALID' || sp.status === 'INVALIDATED' ? sp.status : undefined,
     ipHash: sp.suspicious ? { in: [...suspiciousIps] } : undefined,
@@ -50,7 +52,7 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
   ]);
 
   const makeHref = (p: number) =>
-    `/admin/votes?${new URLSearchParams({ ...(sp.product ? { product: sp.product } : {}), ...(sp.status ? { status: sp.status } : {}), ...(sp.suspicious ? { suspicious: '1' } : {}), page: String(p) })}`;
+    `/admin/votes?${new URLSearchParams({ ...(sp.product ? { product: sp.product } : {}), ...(sp.status ? { status: sp.status } : {}), ...(sp.suspicious ? { suspicious: '1' } : {}), ...(sp.serial ? { serial: sp.serial } : {}), page: String(p) })}`;
 
   return (
     <div className="space-y-6">
@@ -62,7 +64,35 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
         </p>
       )}
 
+      {superAdmin && (
+        <Card>
+          <h2 id="go-phieu" className="font-semibold">Gỡ phiếu (bầu nhầm / phiếu thử)</h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            Nhập số seri in trên phiếu. Lượt bầu của phiếu đó bị xóa, phiếu quét hoặc nhập mã lại được như mới.
+          </p>
+          <ActionForm
+            action={resetVote}
+            className="mt-3 flex flex-wrap items-end gap-3"
+            confirmMessage="Gỡ phiếu này? Lượt bầu sẽ bị xóa và phiếu dùng lại được."
+          >
+            <Field label="Số seri *">
+              <Input name="serial" required defaultValue={sp.serial ?? ''} inputMode="numeric" placeholder="vd. 0123" className="w-32" />
+            </Field>
+            <Field label="Lý do *">
+              <Input name="reason" required placeholder="vd. bầu nhầm, phiếu thử" maxLength={300} className="w-64" />
+            </Field>
+            <Field label="Mật khẩu của bạn *">
+              <Input name="password" type="password" required autoComplete="current-password" className="w-48" />
+            </Field>
+            <SubmitButton>Gỡ để dùng lại</SubmitButton>
+          </ActionForm>
+        </Card>
+      )}
+
       <form className="flex flex-wrap items-end gap-3" method="get">
+        <Field label="Số seri">
+          <Input name="serial" defaultValue={sp.serial ?? ''} inputMode="numeric" placeholder="vd. 0123" className="w-32" />
+        </Field>
         <Field label="Sản phẩm">
           <Select name="product" defaultValue={sp.product ?? ''} className="w-56">
             <option value="">Tất cả</option>
@@ -84,7 +114,7 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
 
       <Table>
         <thead>
-          <tr><th>Thời gian</th><th>Seri</th><th>Sản phẩm</th><th>Giáo khu</th><th>Trạng thái</th><th>Thiết bị</th>{superAdmin && <th>Hủy phiếu</th>}</tr>
+          <tr><th>Thời gian</th><th>Seri</th><th>Sản phẩm</th><th>Giáo khu</th><th>Trạng thái</th><th>Thiết bị</th>{superAdmin && <th>Thao tác</th>}</tr>
         </thead>
         <tbody>
           {votes.map((v) => (
@@ -101,7 +131,12 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
                 {v.ipHash ? `#${v.ipHash.slice(0, 6)}` : ''} {v.userAgent?.slice(0, 40)}
               </td>
               {superAdmin && (
-                <td>
+                <td className="space-y-1">
+                  {/* Điền sẵn seri vào ô "Gỡ phiếu" ở đầu trang */}
+                  <a href={`/admin/votes?serial=${formatSerial(v.token.serial)}#go-phieu`} className="block text-sm text-blue-700 hover:underline">
+                    Gỡ phiếu…
+                  </a>
+                  {/* Hủy: gian lận → không tính phiếu, phiếu khóa vĩnh viễn */}
                   {v.status === 'VALID' && (
                     <details>
                       <summary className="cursor-pointer text-sm text-red-600">Hủy…</summary>
@@ -123,6 +158,10 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
       <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} makeHref={makeHref} />
       <Card>
         <p className="text-sm text-zinc-600">
+          <strong>Gỡ phiếu</strong>: dùng khi người dân bầu nhầm hoặc phiếu thử nghiệm — xóa lượt bầu, phiếu quét lại được.{' '}
+          <strong>Hủy</strong>: dùng khi gian lận — phiếu không được tính và khóa vĩnh viễn. Cả hai đều cần mật khẩu và được ghi vào Nhật ký.
+        </p>
+        <p className="mt-2 text-sm text-zinc-600">
           Hệ thống không lưu địa chỉ IP thô — chỉ lưu mã băm (#xxxxxx) để phát hiện nhiều phiếu từ cùng một mạng.
         </p>
       </Card>
