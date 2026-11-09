@@ -7,6 +7,7 @@ import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
 import { env } from '@/server/env';
 import { renderBallotsPdf } from '@/server/reports/ballots';
+import { buildBatchWorkbook } from '@/server/reports/excel';
 import { isSameOrigin } from '@/server/request';
 import { createTokenBatch, MAX_BATCH } from '@/server/services/tokens';
 
@@ -18,8 +19,8 @@ const schema = z.object({
 });
 
 /**
- * Sinh lô phiếu và trả về PDF ngay trong cùng request.
- * Token gốc không được lưu nên PDF chỉ tải được một lần duy nhất.
+ * Sinh lô phiếu và trả về PDF + Excel (có mã, ảnh QR) ngay trong cùng request.
+ * Token gốc không được lưu nên hai file chỉ tải được một lần duy nhất.
  */
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: 'Yêu cầu không hợp lệ.' }, { status: 403 });
@@ -54,18 +55,23 @@ export async function POST(request: NextRequest) {
   });
   invalidate('r:');
 
-  const pdf = await renderBallotsPdf(ballots, {
-    contestName: contest.name,
-    organizer: contest.organizer,
-    baseUrl: env().PUBLIC_BASE_URL,
-    zoneName: zone?.name,
-  });
+  const baseUrl = env().PUBLIC_BASE_URL;
+  const [pdf, xlsx] = await Promise.all([
+    renderBallotsPdf(ballots, { contestName: contest.name, organizer: contest.organizer, baseUrl, zoneName: zone?.name }),
+    buildBatchWorkbook(ballots, { batchLabel: batch.label, baseUrl, organizer: contest.organizer }),
+  ]);
 
-  return new NextResponse(new Uint8Array(pdf), {
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="phieu-binh-chon-${batch.serialFrom}-${batch.serialTo}.pdf"`,
-      'Cache-Control': 'no-store',
+  // Trả cả PDF và Excel trong một response (base64) vì mã gốc chỉ tồn tại trong request này.
+  const name = `phieu-binh-chon-${batch.serialFrom}-${batch.serialTo}`;
+  return NextResponse.json(
+    {
+      files: [
+        { name: `${name}.pdf`, type: 'application/pdf', data: pdf.toString('base64') },
+        { name: `${name}.xlsx`, type: XLSX_TYPE, data: xlsx.toString('base64') },
+      ],
     },
-  });
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
 }
+
+const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

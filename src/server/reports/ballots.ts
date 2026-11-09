@@ -10,7 +10,7 @@ const ROWS = 4;
 
 /**
  * PDF phiếu bình chọn: 8 phiếu / trang A4 (105 × 74,25 mm), có đường cắt.
- * Mỗi phiếu: QR, số seri, mã nhập tay, hướng dẫn 3 bước.
+ * Mỗi phiếu: QR, số seri, mã nhập tay.
  */
 export async function renderBallotsPdf(
   ballots: GeneratedBallot[],
@@ -63,11 +63,6 @@ export async function renderBallotsPdf(
     doc.font('bold').fontSize(11).fillColor(COLORS.ink).text('PHIẾU BÌNH CHỌN', tx, qrY, { width: tw });
     doc.font('bold').fontSize(9).fillColor(COLORS.burgundy).text(`Số: ${formatSerial(b.serial)}`, tx, doc.y + 1, { width: tw });
     if (info.zoneName) doc.font('regular').fontSize(7.5).fillColor(COLORS.muted).text(info.zoneName, tx, doc.y, { width: tw });
-    doc.moveDown(0.4);
-    doc.font('regular').fontSize(7.8).fillColor(COLORS.ink);
-    for (const line of ['1. Mở camera, quét mã QR.', '2. Chọn hang đá yêu thích.', '3. Bấm “Xác nhận bình chọn”.']) {
-      doc.text(line, tx, doc.y + 1, { width: tw });
-    }
 
     // Mã nhập tay
     const codeY = qrY + qrSize + 2.5 * MM;

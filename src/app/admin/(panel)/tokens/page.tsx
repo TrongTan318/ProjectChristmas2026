@@ -1,6 +1,6 @@
 import type { Prisma, TokenStatus } from '@prisma/client';
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
-import { Badge, Card, Field, Input, PageHeader, Pagination, Select, Stat, Table } from '@/components/admin/ui';
+import { Badge, btn, Card, Field, Input, PageHeader, Pagination, Select, Stat, Table } from '@/components/admin/ui';
 import { formatSerial } from '@/domain/token';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import { isSuperAdmin, requireAdmin } from '@/server/auth';
@@ -68,7 +68,7 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
       {superAdmin ? (
         <Card title="Sinh lô phiếu mới">
           <p className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            ⚠ Vì lý do bảo mật, hệ thống <strong>không lưu mã gốc</strong> của phiếu. File PDF chỉ được tải <strong>một lần</strong> ngay khi tạo.
+            ⚠ Vì lý do bảo mật, hệ thống <strong>không lưu mã gốc</strong> của phiếu. File PDF và Excel (có mã nhập tay, ảnh QR) chỉ được tải <strong>một lần</strong> ngay khi tạo.
             Nếu làm mất file, hãy vô hiệu lô đó và tạo lô mới.
           </p>
           <TokenBatchForm zones={zones.map((z) => ({ id: z.id, name: z.name }))} />
@@ -131,6 +131,14 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
             </Select>
           </Field>
           <button className="rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white">Lọc</button>
+          {/* Xuất theo trạng thái đang lọc (bấm "Lọc" trước khi xuất nếu vừa đổi trạng thái). */}
+          <a
+            href={`/api/admin/tokens/export${status ? `?status=${status}` : ''}`}
+            className={btn.secondary}
+            download
+          >
+            ⤓ Xuất Excel ({status ? STATUS[status].label.toLowerCase() : 'tất cả'})
+          </a>
         </form>
         <Table>
           <thead>
