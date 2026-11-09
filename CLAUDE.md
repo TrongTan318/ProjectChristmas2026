@@ -35,7 +35,7 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 
 ## Quy tắc nghiệp vụ không được vi phạm
 
-- 1 phiếu = 1 token = 1 lần bầu = 1 sản phẩm. `USED`/`REVOKED` không bao giờ quay lại `ACTIVE`.
+- 1 phiếu = 1 token = 1 lần bầu = 1 sản phẩm. `USED`/`REVOKED` không quay lại `ACTIVE` — **ngoại lệ duy nhất**: "Gỡ phiếu" (`resetVote`, `/admin/votes`) cho bầu nhầm/phiếu thử: Super Admin + mật khẩu + lý do, xóa hẳn lượt bầu (vì `UNIQUE(token_id)`) và đưa token `USED → ACTIVE` trong một transaction, bản ghi đầy đủ lưu ở audit `vote.reset`. Không gỡ được token `REVOKED`. Theo yêu cầu người dùng.
 - Ghi phiếu trong **một transaction**: `updateMany ... WHERE status='ACTIVE'` (kiểm tra `count === 1`) + `vote.create` với `UNIQUE(token_id)` (`src/server/services/voting.ts`). Gửi lại cùng sản phẩm → trả biên nhận (idempotent).
 - Token: CSPRNG, Crockford Base32 5 ký tự (25 bit, không gạch ngang); DB chỉ lưu `HMAC-SHA256(token, TOKEN_SECRET)` → PDF phiếu + Excel lô (mã nhập tay, ảnh QR) chỉ tải được 1 lần lúc tạo lô (`POST /api/admin/tokens/batches` trả JSON base64 cả 2 file). Excel danh sách phiếu xuất sau này (`GET /api/admin/tokens/export?status=`) không có cột mã.
 - Nhận phiếu khi `votingStatus = OPEN` **và** trong `[votingStartAt, votingEndAt]` (`getVotingState`).
