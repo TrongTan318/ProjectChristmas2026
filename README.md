@@ -131,6 +131,8 @@ docker compose build app && docker compose run --rm migrate && docker compose up
   `0 */6 * * * /srv/hangda/deploy/scripts/backup-offsite.sh >> /var/log/hangda-offsite.log 2>&1`
 - Bật snapshot VPS của nhà cung cấp trước ngày bình chọn.
 
+Cập nhật code trên server: `./deploy/scripts/update.sh` (pull → build → migrate → chạy lại → dọn image cũ và build cache để ổ đĩa không đầy dần).
+
 Khôi phục DB: `./deploy/scripts/restore.sh backups/db-YYYYMMDD-HHMMSS.dump` (tự backup trạng thái hiện tại trước khi ghi đè).
 Khôi phục media: `rclone copy offsite:hangda-backup/media storage/media`.
 
