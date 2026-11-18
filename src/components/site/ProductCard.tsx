@@ -66,7 +66,7 @@ export function ProductCard({
         {large && product.shortDescription && (
           <p className="mt-1.5 line-clamp-2 text-sm text-ink/70">{product.shortDescription}</p>
         )}
-        <ViewCount count={product.viewCount} className="mt-1.5 text-xs text-ink/55" />
+        <ViewCount count={product.viewCount} className="mt-1.5 text-xs text-ink/70" />
       </div>
     </Link>
   );

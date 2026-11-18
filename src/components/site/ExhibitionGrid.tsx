@@ -10,7 +10,7 @@ function FilterButton({ label, active, onClick }: { label: string; active: boole
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'glass rounded-full px-4 py-2 text-sm',
+        'glass shrink-0 snap-start rounded-full px-4 py-2 text-sm whitespace-nowrap',
         active ? 'glass-green font-semibold' : 'glass-clear',
       )}
     >
@@ -48,15 +48,19 @@ export function ExhibitionFilter({
 
   return (
     <>
-      <div className="mb-10" role="group" aria-label="Lọc theo lớp">
-        <div className="mb-3 flex justify-center">
+      {/* Điện thoại: một hàng cuộn ngang (mép phải mờ dần báo còn nút) để hang đá hiện ngay màn hình đầu.
+          Từ sm: "Tất cả" một dòng riêng, các lớp xuống dòng và canh giữa như cũ. */}
+      <div
+        role="group"
+        aria-label="Lọc theo lớp"
+        className="-mx-4 mb-8 flex snap-x scroll-px-4 gap-2 overflow-x-auto overscroll-x-contain px-4 pr-12 pb-2 [mask-image:linear-gradient(to_right,black_85%,transparent)] [scrollbar-width:none] sm:mx-0 sm:mb-10 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:pb-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div className="flex shrink-0 sm:mb-1 sm:w-full sm:justify-center">
           <FilterButton label="Tất cả" active={active === ''} onClick={() => setActive('')} />
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {classes.map((c) => (
-            <FilterButton key={c} label={c} active={active === c} onClick={() => setActive(c)} />
-          ))}
-        </div>
+        {classes.map((c) => (
+          <FilterButton key={c} label={c} active={active === c} onClick={() => setActive(c)} />
+        ))}
       </div>
       {/* Đang lọc theo lớp: dùng flex canh giữa để thẻ không bị dồn sang cột trái (tablet/laptop),
           độ rộng mỗi thẻ giữ bằng một cột của lưới. */}
