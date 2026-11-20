@@ -46,8 +46,9 @@ export function SiteHeader({ title }: { title: string }) {
           <svg width="30" height="30" viewBox="0 0 24 24" className="text-gold" fill="currentColor" aria-hidden>
             <path d="M12 0l2.4 8.6L24 12l-9.6 3.4L12 24l-2.4-8.6L0 12l9.6-3.4z" />
           </svg>
-          <span className="font-serif text-lg leading-none font-semibold text-gold-light">
-            Hang Đá <span className="text-ivory">2026</span>
+          {/* Điện thoại nhỏ hơn để không đè nút menu ☰ */}
+          <span className="font-serif text-[15px] leading-none font-semibold whitespace-nowrap text-gold-light min-[400px]:text-base sm:text-lg">
+            Mỗi lớp học là <span className="text-ivory">một hang đá</span>
           </span>
         </Link>
 
