@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Ornament } from '@/components/site/Decor';
-import { Gallery } from '@/components/site/Gallery';
 import { Reveal } from '@/components/site/Reveal';
 import { ShareButton } from '@/components/site/ShareButton';
+import { StageGallery } from '@/components/site/StageGallery';
 import { YouTubeFacade } from '@/components/site/YouTubeFacade';
 import { fileUrl, mediaUrl } from '@/lib/media';
 import { ViewCount } from '@/components/site/ViewCount';
 import { ViewTracker } from '@/components/site/ViewTracker';
-import { requireActiveContest } from '@/server/contest';
+import { defaultOpenStage, groupByStage } from '@/domain/stage';
+import { getSiteSettings, requireActiveContest, stageLabels } from '@/server/contest';
 import { getProductBySlug, listProducts } from '@/server/services/content';
 import { getVoteSession } from '@/server/vote-session';
 
@@ -56,7 +57,19 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(contest.id, slug);
   if (!product) notFound();
 
-  const [all, voteSession] = await Promise.all([listProducts(contest.id), getVoteSession()]);
+  const [all, voteSession, settings] = await Promise.all([listProducts(contest.id), getVoteSession(), getSiteSettings(contest.id)]);
+
+  // Chỉ giai đoạn admin bật; xếp từ mới nhất (3) xuống cũ nhất (1); mở sẵn giai đoạn mới nhất có ảnh.
+  const byStage = groupByStage(product.images);
+  const visible = stageLabels(settings).filter((l) => l.enabled).reverse();
+  const openStage = defaultOpenStage(visible.map((l) => ({ stage: l.stage, count: byStage[l.stage].length })));
+  const stages = visible.map((l) => ({
+    stage: l.stage,
+    title: l.title,
+    note: l.note,
+    open: l.stage === openStage,
+    images: byStage[l.stage].map((i) => ({ key: i.key, width: i.width, height: i.height, alt: i.alt, blurDataUrl: i.blurDataUrl })),
+  }));
 
   const position = all.findIndex((p) => p.id === product.id);
   const prev = position > 0 ? all[position - 1] : all[all.length - 1];
@@ -83,46 +96,48 @@ export default async function ProductPage({ params }: Props) {
           <nav aria-label="Breadcrumb" className="text-sm text-ivory/60">
             <Link href="/trien-lam" className="hover:text-gold-light">← Phòng triển lãm</Link>
           </nav>
-          <div className="mt-8 grid gap-10 lg:grid-cols-5 lg:gap-14">
-            <div className="lg:col-span-3">
-              <Gallery
-                title={product.name}
-                images={product.images.map((i) => ({ key: i.key, width: i.width, height: i.height, alt: i.alt, blurDataUrl: i.blurDataUrl }))}
-              />
+          <div className="mx-auto mt-8 max-w-3xl text-center">
+            <p className="text-sm font-semibold tracking-[0.3em] text-gold uppercase">
+              {product.team?.className}
+              {product.team?.name ? ` · ${product.team.name}` : ''}
+            </p>
+            <h1 className="mt-4 font-serif text-4xl leading-tight font-bold text-gold-gradient sm:text-5xl">{product.name}</h1>
+            <ViewCount count={product.viewCount} className="mt-3 text-sm text-ivory/60" />
+            <Ornament className="mt-6" />
+          </div>
+
+          {/* Ảnh theo giai đoạn (3 → 2 → 1), nằm trên phần mô tả */}
+          {stages.length > 0 && (
+            <div className="mx-auto mt-8 max-w-4xl">
+              <StageGallery stages={stages} productName={product.name} />
             </div>
-            <div className="lg:col-span-2">
-              <p className="text-sm font-semibold tracking-[0.3em] text-gold uppercase">
-                {product.team?.className}
-                {product.team?.name ? ` · ${product.team.name}` : ''}
-              </p>
-              <h1 className="mt-4 font-serif text-4xl leading-tight font-bold text-gold-gradient sm:text-5xl">{product.name}</h1>
-              <ViewCount count={product.viewCount} className="mt-3 text-sm text-ivory/60" />
-              <Ornament className="mt-6 !justify-start" />
-              {product.shortDescription && (
-                <p className="mt-6 text-lg leading-relaxed text-ivory/85 sm:text-xl">{product.shortDescription}</p>
-              )}
-              {product.christmasMessage && (
-                <blockquote className="mt-8 border-l-2 border-gold pl-5 font-serif text-xl text-gold-light italic">
-                  “{product.christmasMessage.split('\n')[0]}”
-                </blockquote>
-              )}
-              {product.team?.leaderName && (
-                <p className="mt-6 text-sm text-ivory/60">Huynh trưởng phụ trách: {product.team.leaderName}</p>
-              )}
-              <div className="mt-10 flex flex-wrap gap-3">
-                {voteSession && (
-                  <Link href={`/binh-chon?chon=${product.id}`} className="btn-glass text-lg">
-                    ★ Bình chọn hang đá này
-                  </Link>
-                )}
-                <ShareButton title={product.name} text={product.shortDescription} />
-              </div>
+          )}
+
+          <div className="mx-auto max-w-3xl text-center">
+            {product.shortDescription && (
+              <p className="mt-6 text-lg leading-relaxed text-ivory/85 sm:text-xl">{product.shortDescription}</p>
+            )}
+            {product.christmasMessage && (
+              <blockquote className="mt-8 font-serif text-xl text-gold-light italic">
+                “{product.christmasMessage.split('\n')[0]}”
+              </blockquote>
+            )}
+            {product.team?.leaderName && (
+              <p className="mt-6 text-sm text-ivory/60">Huynh trưởng phụ trách: {product.team.leaderName}</p>
+            )}
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               {voteSession && (
-                <Link href="/binh-chon" className="mt-4 inline-block text-ivory/70 underline hover:text-gold-light">
-                  ← Quay lại danh sách bình chọn
+                <Link href={`/binh-chon?chon=${product.id}`} className="btn-glass text-lg">
+                  ★ Bình chọn hang đá này
                 </Link>
               )}
+              <ShareButton title={product.name} text={product.shortDescription} />
             </div>
+            {voteSession && (
+              <Link href="/binh-chon" className="mt-4 inline-block text-ivory/70 underline hover:text-gold-light">
+                ← Quay lại danh sách bình chọn
+              </Link>
+            )}
           </div>
         </div>
       </header>

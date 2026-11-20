@@ -27,6 +27,7 @@ function refresh(productId?: string) {
   invalidatePublic();
   revalidatePath('/admin/products');
   if (productId) revalidatePath(`/admin/products/${productId}`);
+  revalidatePath('/admin/stages');
 }
 
 export async function createProduct(_prev: ActionState, form: FormData): Promise<ActionState> {
@@ -130,7 +131,11 @@ export async function setCoverImage(imageId: string) {
 export async function moveImage(imageId: string, direction: -1 | 1) {
   await requireAdmin();
   const image = await loadImage(imageId);
-  const images = await prisma.productImage.findMany({ where: { productId: image.productId, deletedAt: null }, orderBy: { sortOrder: 'asc' } });
+  // Chỉ đổi thứ tự trong cùng một giai đoạn.
+  const images = await prisma.productImage.findMany({
+    where: { productId: image.productId, stage: image.stage, deletedAt: null },
+    orderBy: { sortOrder: 'asc' },
+  });
   const index = images.findIndex((i) => i.id === imageId);
   const target = index + direction;
   if (target < 0 || target >= images.length) return;
@@ -156,7 +161,11 @@ export async function deleteImage(imageId: string) {
   await prisma.productImage.update({ where: { id: imageId }, data: { deletedAt: new Date(), isCover: false } });
   await removeByKey(image.key);
   if (image.isCover) {
-    const next = await prisma.productImage.findFirst({ where: { productId: image.productId, deletedAt: null }, orderBy: { sortOrder: 'asc' } });
+    // Ảnh đại diện mới: ảnh đầu của giai đoạn mới nhất còn ảnh.
+    const next = await prisma.productImage.findFirst({
+      where: { productId: image.productId, deletedAt: null },
+      orderBy: [{ stage: { sort: 'desc', nulls: 'first' } }, { sortOrder: 'asc' }],
+    });
     if (next) await prisma.productImage.update({ where: { id: next.id }, data: { isCover: true } });
   }
   await audit({ userId: user.id, action: 'image.delete', entityType: 'ProductImage', entityId: imageId, before: image });

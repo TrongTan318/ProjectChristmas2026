@@ -13,7 +13,8 @@ interface Img {
   isCover: boolean;
 }
 
-export function ImageManager({ productId, images, max }: { productId: string; images: Img[]; max: number }) {
+/** Quản lý ảnh của một giai đoạn; ★ đặt ảnh đại diện của cả sản phẩm (thẻ triển lãm, chia sẻ). */
+export function ImageManager({ productId, images, max, stage }: { productId: string; images: Img[]; max: number; stage: number }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export function ImageManager({ productId, images, max }: { productId: string; im
       setProgress(`Đang tải ảnh ${i + 1}/${list.length}: ${file.name}`);
       const body = new FormData();
       body.append('file', file);
+      body.append('stage', String(stage));
       try {
         const res = await fetch(`/api/admin/products/${productId}/images`, { method: 'POST', body });
         if (!res.ok) errs.push(`${file.name}: ${(await res.json().catch(() => ({}))).error ?? 'Lỗi tải lên'}`);
@@ -108,7 +110,11 @@ export function ImageManager({ productId, images, max }: { productId: string; im
           </li>
         ))}
       </ul>
-      {images.length === 0 && <p className="mt-4 text-sm text-zinc-500">Chưa có ảnh. Ảnh đầu tiên sẽ tự động là ảnh đại diện.</p>}
+      {images.length === 0 && (
+        <p className="mt-4 text-sm text-zinc-500">
+          Chưa có ảnh cho giai đoạn này. Nếu đội chưa có ảnh đại diện, ảnh đầu tiên tải lên sẽ tự động là ảnh đại diện.
+        </p>
+      )}
     </div>
   );
 }

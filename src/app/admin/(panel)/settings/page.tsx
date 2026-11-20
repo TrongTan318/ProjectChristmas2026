@@ -99,6 +99,23 @@ export default async function SettingsPage() {
             <Field label="Số sản phẩm trong Top"><Input name="rankingTopN" type="number" min={3} max={50} defaultValue={settings.rankingTopN} /></Field>
           </div>
           <Field label="Hướng dẫn hỗ trợ trên trang bình chọn"><Input name="voteHelp" defaultValue={settings.voteHelp} maxLength={500} /></Field>
+          <fieldset id="giai-doan" className="scroll-mt-24 rounded-lg border border-zinc-200 p-4">
+            <legend className="px-1 text-sm font-semibold">3 giai đoạn ảnh (trang chi tiết đội, áp dụng cho mọi đội)</legend>
+            <p className="mb-3 text-sm text-zinc-600">Bỏ chọn "Hiện trên website" để ẩn giai đoạn chưa tới; admin vẫn tải ảnh trước được.</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {([1, 2, 3] as const).map((n) => (
+                <div key={n} className="space-y-2">
+                  <Field label={`Giai đoạn ${n} — tên`}>
+                    <Input name={`stage${n}Title`} defaultValue={settings[`stage${n}Title`]} maxLength={80} placeholder={`Giai đoạn ${n}`} />
+                  </Field>
+                  <Field label="Mô tả ngắn">
+                    <Input name={`stage${n}Note`} defaultValue={settings[`stage${n}Note`]} maxLength={200} placeholder="vd. Lên ý tưởng và phác thảo" />
+                  </Field>
+                  <Checkbox name={`stage${n}Enabled`} label="Hiện trên website" defaultChecked={settings[`stage${n}Enabled`]} />
+                </div>
+              ))}
+            </div>
+          </fieldset>
           <Field label="Mô tả SEO"><Input name="seoDescription" defaultValue={settings.seoDescription} maxLength={300} /></Field>
           <Checkbox name="effectsEnabled" label="Bật hiệu ứng tuyết rơi" defaultChecked={settings.effectsEnabled} />
           <div><SubmitButton>Lưu nội dung website</SubmitButton></div>

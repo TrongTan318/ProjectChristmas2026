@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { MAX_IMAGES_PER_PRODUCT } from '@/lib/limits';
+import { parseStage } from '@/domain/stage';
+import { MAX_IMAGES_PER_STAGE } from '@/lib/limits';
 import { audit } from '@/server/audit';
 import { getCurrentAdmin } from '@/server/auth';
 import { invalidatePublic } from '@/server/cache';
@@ -17,15 +18,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const product = await prisma.product.findFirst({ where: { id, deletedAt: null } });
   if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm.' }, { status: 404 });
 
-  const count = await prisma.productImage.count({ where: { productId: id, deletedAt: null } });
-  if (count >= MAX_IMAGES_PER_PRODUCT) {
-    return NextResponse.json({ error: `Tối đa ${MAX_IMAGES_PER_PRODUCT} ảnh mỗi sản phẩm.` }, { status: 400 });
-  }
-
   const form = await request.formData().catch(() => null);
   const file = form?.get('file');
   if (!(file instanceof File)) return NextResponse.json({ error: 'Không có tệp ảnh.' }, { status: 400 });
   if (file.size > MAX_IMAGE_BYTES) return NextResponse.json({ error: 'Ảnh vượt quá 15MB.' }, { status: 413 });
+
+  // Mọi ảnh đều thuộc một giai đoạn (1–3), tải ở /admin/stages.
+  const stage = parseStage(form?.get('stage'));
+  if (!stage) return NextResponse.json({ error: 'Chọn giai đoạn (1–3) cho ảnh.' }, { status: 400 });
+  const [count, hasCover] = await Promise.all([
+    prisma.productImage.count({ where: { productId: id, stage, deletedAt: null } }),
+    prisma.productImage.count({ where: { productId: id, isCover: true, deletedAt: null } }),
+  ]);
+  if (count >= MAX_IMAGES_PER_STAGE) {
+    return NextResponse.json({ error: `Tối đa ${MAX_IMAGES_PER_STAGE} ảnh mỗi giai đoạn.` }, { status: 400 });
+  }
 
   try {
     const processed = await processImage(Buffer.from(await file.arrayBuffer()), `products/${id}`);
@@ -37,11 +44,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         height: processed.height,
         blurDataUrl: processed.blurDataUrl,
         alt: '',
-        isCover: count === 0,
+        isCover: hasCover === 0, // đội chưa có ảnh đại diện → ảnh đầu tiên tải lên
+        stage,
         sortOrder: count,
       },
     });
-    await audit({ userId: user.id, action: 'image.upload', entityType: 'ProductImage', entityId: image.id, after: { productId: id, key: image.key } });
+    await audit({ userId: user.id, action: 'image.upload', entityType: 'ProductImage', entityId: image.id, after: { productId: id, key: image.key, stage } });
     invalidatePublic();
     return NextResponse.json({ id: image.id });
   } catch (error) {

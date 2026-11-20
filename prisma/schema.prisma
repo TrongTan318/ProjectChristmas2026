@@ -214,6 +214,8 @@ model ProductImage {
   blurDataUrl String    @map("blur_data_url") @db.Text
   alt         String    @default("")
   isCover     Boolean   @default(false) @map("is_cover")
+  /// Giai đoạn thực hiện 1–3 (trang chi tiết đội); null = ảnh đại diện/ảnh chung.
+  stage       Int?
   sortOrder   Int       @default(0) @map("sort_order")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -222,6 +224,7 @@ model ProductImage {
   product Product @relation(fields: [productId], references: [id])
 
   @@index([productId, sortOrder])
+  @@index([productId, stage, sortOrder])
   @@map("product_images")
 }
 
