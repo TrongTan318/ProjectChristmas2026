@@ -79,12 +79,13 @@ export default async function DashboardPage() {
             {results.ranking.length === 0 && <p className="text-sm text-zinc-500">Chưa có sản phẩm xuất bản.</p>}
           </ol>
         </Card>
-        <BarChartCard title="Phiếu theo giáo khu" data={results.byZone.map((z) => ({ label: z.name, value: z.votes }))} />
         <LineChartCard title="Phiếu theo ngày" data={byDay.map((d) => ({ label: d.day.slice(5).split('-').reverse().join('/'), value: d.votes }))} />
-        <BarChartCard
-          title="Phiếu theo khung giờ"
-          data={Array.from({ length: 24 }, (_, h) => ({ label: `${h}h`, value: byHour.find((x) => x.hour === h)?.votes ?? 0 }))}
-        />
+        <div className="lg:col-span-2">
+          <BarChartCard
+            title="Phiếu theo khung giờ"
+            data={Array.from({ length: 24 }, (_, h) => ({ label: `${h}h`, value: byHour.find((x) => x.hour === h)?.votes ?? 0 }))}
+          />
+        </div>
       </div>
     </div>
   );

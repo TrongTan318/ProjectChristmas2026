@@ -45,7 +45,7 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
-      include: { product: { select: { name: true } }, token: { select: { serial: true } }, zone: { select: { name: true } } },
+      include: { product: { select: { name: true } }, token: { select: { serial: true } } },
     }),
     prisma.vote.count({ where }),
     prisma.product.findMany({ where: { contestId: contest.id, deletedAt: null }, orderBy: { name: 'asc' }, select: { id: true, name: true } }),
@@ -114,7 +114,7 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
 
       <Table>
         <thead>
-          <tr><th>Thời gian</th><th>Seri</th><th>Sản phẩm</th><th>Giáo khu</th><th>Trạng thái</th><th>Thiết bị</th>{superAdmin && <th>Thao tác</th>}</tr>
+          <tr><th>Thời gian</th><th>Seri</th><th>Sản phẩm</th><th>Trạng thái</th><th>Thiết bị</th>{superAdmin && <th>Thao tác</th>}</tr>
         </thead>
         <tbody>
           {votes.map((v) => (
@@ -122,7 +122,6 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
               <td className="whitespace-nowrap text-zinc-600">{formatDateTime(v.createdAt)}</td>
               <td className="font-mono">{formatSerial(v.token.serial)}</td>
               <td className="font-medium">{v.product.name}</td>
-              <td className="text-zinc-600">{v.zone?.name ?? '—'}</td>
               <td>
                 {v.status === 'VALID' ? <Badge tone="green">Hợp lệ</Badge> : <Badge tone="red">Đã hủy</Badge>}
                 {v.invalidReason && <p className="mt-1 text-xs text-zinc-500">{v.invalidReason}</p>}
@@ -152,7 +151,7 @@ export default async function VotesPage({ searchParams }: { searchParams: Promis
               )}
             </tr>
           ))}
-          {votes.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-zinc-500">Chưa có phiếu bầu.</td></tr>}
+          {votes.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-zinc-500">Chưa có phiếu bầu.</td></tr>}
         </tbody>
       </Table>
       <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} makeHref={makeHref} />

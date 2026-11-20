@@ -32,7 +32,6 @@ export function ResultsBoard({ initial, topN, compact }: { initial: Results; top
 
   const rows = topN ? data.ranking.slice(0, topN) : data.ranking;
   const max = Math.max(1, ...data.ranking.map((r) => r.votes));
-  const zoneMax = Math.max(1, ...data.byZone.map((z) => z.votes));
 
   return (
     <div>
@@ -105,23 +104,6 @@ export function ResultsBoard({ initial, topN, compact }: { initial: Results; top
           </li>
         ))}
       </ol>
-
-      {!compact && data.byZone.length > 0 && (
-        <div className="mt-14">
-          <h3 className="text-center font-serif text-2xl text-gold-light">Thống kê theo giáo khu</h3>
-          <div className="mt-6 space-y-3">
-            {data.byZone.map((z) => (
-              <div key={z.zoneId ?? 'none'} className="flex items-center gap-3">
-                <span className="w-36 shrink-0 truncate text-sm text-ivory/80 sm:w-48">{z.name}</span>
-                <div className="h-3 flex-1 overflow-hidden rounded-full bg-ivory/10">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#7a1e17] via-burgundy-light to-pine-light" style={{ width: `${(z.votes / zoneMax) * 100}%` }} />
-                </div>
-                <span className="w-12 text-right text-sm font-semibold text-gold-light tabular-nums">{z.votes}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <p className="mt-8 text-center text-xs text-ivory/50">
         Cập nhật lúc {formatDateTime(data.updatedAt)} · tự động làm mới mỗi 10 giây

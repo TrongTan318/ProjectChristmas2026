@@ -56,14 +56,6 @@ async function main() {
   });
   console.log(`✔ Cuộc thi: ${contest.name}`);
 
-  const zoneCount = await prisma.zone.count();
-  if (zoneCount === 0) {
-    await prisma.zone.createMany({
-      data: ['Giáo khu 1', 'Giáo khu 2', 'Giáo khu 3', 'Giáo khu 4', 'Giáo khu 5'].map((name, i) => ({ name, sortOrder: i + 1 })),
-    });
-    console.log('✔ Đã tạo 5 giáo khu mẫu (đổi tên trong Admin → Giáo khu)');
-  }
-
   if (process.env.SEED_DEMO === 'true') await seedDemo(contest.id);
 }
 

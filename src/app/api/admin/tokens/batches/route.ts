@@ -4,7 +4,6 @@ import { audit } from '@/server/audit';
 import { getCurrentAdmin, isSuperAdmin, verifyPassword } from '@/server/auth';
 import { invalidate } from '@/server/cache';
 import { requireActiveContest } from '@/server/contest';
-import { prisma } from '@/server/db';
 import { env } from '@/server/env';
 import { renderBallotsPdf } from '@/server/reports/ballots';
 import { buildBatchWorkbook } from '@/server/reports/excel';
@@ -13,7 +12,6 @@ import { createTokenBatch, MAX_BATCH } from '@/server/services/tokens';
 
 const schema = z.object({
   quantity: z.coerce.number().int().min(1, 'Số lượng tối thiểu là 1').max(MAX_BATCH, `Tối đa ${MAX_BATCH} phiếu mỗi lô`),
-  zoneId: z.string().max(40).optional().transform((v) => v || null),
   label: z.string().trim().min(1, 'Nhập tên lô').max(120),
   password: z.string().min(1, 'Nhập mật khẩu xác nhận'),
 });
@@ -36,13 +34,11 @@ export async function POST(request: NextRequest) {
   }
 
   const contest = await requireActiveContest();
-  const zone = input.zoneId ? await prisma.zone.findFirst({ where: { id: input.zoneId, deletedAt: null } }) : null;
-  if (input.zoneId && !zone) return NextResponse.json({ error: 'Giáo khu không hợp lệ.' }, { status: 400 });
 
   const { batch, ballots } = await createTokenBatch({
     contestId: contest.id,
     quantity: input.quantity,
-    zoneId: zone?.id ?? null,
+    zoneId: null, // Giáo xứ không dùng giáo khu; cột zone_id giữ lại trong DB.
     label: input.label,
     userId: user.id,
   });
@@ -51,13 +47,13 @@ export async function POST(request: NextRequest) {
     action: 'token.batch.create',
     entityType: 'TokenBatch',
     entityId: batch.id,
-    after: { label: batch.label, quantity: batch.quantity, serialFrom: batch.serialFrom, serialTo: batch.serialTo, zone: zone?.name },
+    after: { label: batch.label, quantity: batch.quantity, serialFrom: batch.serialFrom, serialTo: batch.serialTo },
   });
   invalidate('r:');
 
   const baseUrl = env().PUBLIC_BASE_URL;
   const [pdf, xlsx] = await Promise.all([
-    renderBallotsPdf(ballots, { contestName: contest.name, organizer: contest.organizer, baseUrl, zoneName: zone?.name }),
+    renderBallotsPdf(ballots, { contestName: contest.name, organizer: contest.organizer, baseUrl }),
     buildBatchWorkbook(ballots, { batchLabel: batch.label, baseUrl, organizer: contest.organizer }),
   ]);
 

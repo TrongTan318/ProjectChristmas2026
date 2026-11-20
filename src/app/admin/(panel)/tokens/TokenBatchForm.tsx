@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Field, Input, Select, btn } from '@/components/admin/ui';
+import { Field, Input, btn } from '@/components/admin/ui';
 
 type DownloadFile = { name: string; url: string };
 
@@ -20,7 +20,7 @@ function download(file: DownloadFile) {
   a.click();
 }
 
-export function TokenBatchForm({ zones }: { zones: { id: string; name: string }[] }) {
+export function TokenBatchForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -62,18 +62,12 @@ export function TokenBatchForm({ zones }: { zones: { id: string; name: string }[
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Số lượng phiếu *">
           <Input name="quantity" type="number" min={1} max={2000} defaultValue={1000} required />
         </Field>
         <Field label="Tên lô *">
           <Input name="label" required maxLength={120} placeholder="Đợt 1 — Thánh lễ Vọng" />
-        </Field>
-        <Field label="Giáo khu phân phối">
-          <Select name="zoneId" defaultValue="">
-            <option value="">— Chưa gán —</option>
-            {zones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
-          </Select>
         </Field>
         <Field label="Mật khẩu của bạn (xác nhận) *">
           <Input name="password" type="password" required autoComplete="current-password" />
