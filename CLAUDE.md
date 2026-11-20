@@ -51,9 +51,46 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Server action: `'use server'`, chỉ export hàm async; dạng `(prev: ActionState, form: FormData)` bọc bằng `runAction`, validate bằng Zod, gọi `requireAdmin/requireSuperAdmin…`, sau khi ghi gọi `invalidatePublic()` (hoặc `invalidate('r:')` cho kết quả) + `revalidatePath`.
 - Trang đều `force-dynamic` (root layout); hiệu năng dựa vào cache bộ nhớ (`cached()`, TTL 5–30s) + microcache Nginx 10s. Ứng dụng giả định **1 instance**.
 - Ảnh: biến thể `${key}-{400|800|1600}.webp`, dùng `mediaUrl/mediaSrcSet` và component `Picture`.
+- Ảnh sản phẩm: mọi ảnh thuộc một giai đoạn (cột `stage` 1–3; ảnh cũ đã chuyển vào GĐ 1 bằng migration), tải và chọn ảnh đại diện ★ ở `/admin/stages`; API upload bắt buộc `stage`. Trang `/trien-lam/<slug>`: các khung giai đoạn (`StageGallery`, `<details>` thu gọn/mở) nằm trên mô tả ngắn, xếp 3 → 2 → 1, mở sẵn giai đoạn mới nhất có ảnh (`defaultOpenStage`). Ảnh đại diện: đánh dấu `isCover` → giai đoạn mới nhất (`pickCover`, `COVER_ORDER`). Tên/mô tả/bật-tắt giai đoạn ở Cài đặt (`stageNTitle/Note/Enabled`, `stageLabels`); giai đoạn tắt thì khách không thấy.
+- Giáo xứ không có giáo khu: bảng `zones` và cột `zone_id` còn trong DB nhưng đã gỡ khỏi giao diện, báo cáo và sinh phiếu (luôn `zoneId: null`). Không thêm lại khi chưa hỏi.
 - Màu: burgundy `#3B0907`, burgundy-light `#542C2A`, pine `#113621`, ink `#0F0908`, gold `#D4AF37`, ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`); nền tối xen kẽ `.bg-museum` (ánh đỏ) / `.bg-forest` (ánh xanh).
 - Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn.
 - Trang `/v/*`, `/binh-chon`, `/vote` phải nhẹ: chữ ≥ 18px, nút ≥ 48px.
+
+## Quy trình khi thêm tính năng / sửa code
+
+### 1. Lên kế hoạch (chưa sửa gì)
+- Đọc code liên quan, nêu rõ: hiện trạng → thay đổi đề xuất → file sẽ sửa → ảnh hưởng/rủi ro.
+- Việc chưa rõ hoặc có nhiều cách làm → hỏi người dùng, kèm phương án khuyến nghị.
+- Thay đổi chạm quy tắc nghiệp vụ (phiếu, token, phân quyền, kết quả) → nêu góc nhìn Security/QA và hỏi riêng.
+- **Chỉ bắt đầu sửa khi người dùng đồng ý.** Đồng ý cho việc này không áp dụng cho việc khác.
+
+### 2. Viết code
+- Mở file đang sửa trong VS Code (`code -r -g "<file>:<dòng>"`) để người dùng theo dõi; lệnh terminal phải ghi ra trước khi chạy.
+- Theo "Cấu trúc", "Quy ước code" và "Quy tắc nghiệp vụ" ở trên: logic trong `src/server/`, route/action chỉ validate (Zod) + kiểm tra quyền + gọi service; TypeScript strict, không `any`.
+- Đổi `prisma/schema.prisma` → tạo migration và báo người còn lại.
+- Không viết thêm tài liệu thiết kế; chỉ cập nhật CLAUDE.md khi quy tắc thay đổi.
+
+### 3. Test
+- Logic bình chọn, token, phân quyền, chống gian lận: **bắt buộc có hoặc sửa unit test**.
+- Trước khi báo xong, chạy trong container Node 22: `npm ci && npx prisma generate && npx tsc --noEmit && npx vitest run tests/unit`
+- Test fail → báo nguyên văn output, không báo "xong".
+
+### 4. QC (kiểm tra trên web)
+- Build bằng `scripts/docker-build.ps1`, kiểm tra trang liên quan (mã HTTP, ảnh chụp màn hình khi sửa giao diện), cả laptop và điện thoại nếu có chạm giao diện.
+- Báo rõ cái gì đã kiểm tra, cái gì chưa (ví dụ cần đăng nhập admin mới thử được).
+- Người dùng duyệt → `docker-accept.ps1`; không ưng → `docker-rollback.ps1`.
+
+### 5. Đưa lên GitHub
+- Chỉ khi người dùng yêu cầu. Theo `CONTRIBUTING.md`: nhánh `feature/…`/`fix/…` từ `develop` → Pull Request → CI ✅ → merge; `develop` → `main` qua PR rồi gắn tag `vX.Y.Z`.
+- Trước khi push: đánh giá ảnh hưởng, hỏi ý kiến; backup bằng tag `backup/<ngày>/<nhánh>`.
+
+### Checklist trước khi báo hoàn thành
+- [ ] Người dùng đã duyệt kế hoạch
+- [ ] Typecheck + unit test qua (có test mới nếu chạm phần bình chọn)
+- [ ] Đã build và kiểm tra trên web; nêu rõ phần chưa kiểm tra
+- [ ] CLAUDE.md cập nhật nếu quy tắc thay đổi
+- [ ] Chưa commit/push nếu chưa được yêu cầu
 
 ## Khác với tài liệu kiến trúc
 
