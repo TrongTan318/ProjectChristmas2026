@@ -8,9 +8,10 @@ const ITEMS = [
   { href: '/admin', label: 'Tổng quan', icon: '◈' },
   { href: '/admin/teams', label: 'Đội thi', icon: '👥' },
   { href: '/admin/products', label: 'Sản phẩm', icon: '🖼' },
+  { href: '/admin/stages', label: 'Ảnh giai đoạn', icon: '❖' },
+  { href: '/admin/personal-items', label: 'Vật phẩm cá nhân', icon: '🎁' },
   { href: '/admin/tokens', label: 'Phiếu QR', icon: '▦' },
   { href: '/admin/votes', label: 'Phiếu bầu', icon: '✓' },
-  { href: '/admin/zones', label: 'Giáo khu', icon: '⌂' },
   { href: '/admin/banners', label: 'Banner', icon: '▭' },
   { href: '/admin/news', label: 'Tin tức', icon: '✎' },
   { href: '/admin/sponsors', label: 'Nhà tài trợ', icon: '★' },
@@ -20,11 +21,15 @@ const ITEMS = [
   { href: '/admin/audit', label: 'Nhật ký', icon: '☰', superOnly: true },
 ];
 
-export function AdminNav({ superAdmin }: { superAdmin: boolean }) {
+/** Tài khoản lớp chỉ có 1 mục: ảnh và giai đoạn của lớp mình. */
+const TEAM_ITEMS = [{ href: '/admin/stages', label: 'Ảnh của lớp', icon: '❖' }];
+
+export function AdminNav({ superAdmin, team }: { superAdmin: boolean; team: boolean }) {
   const pathname = usePathname();
+  const items = team ? TEAM_ITEMS : ITEMS.filter((i) => !i.superOnly || superAdmin);
   return (
     <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Quản trị">
-      {ITEMS.filter((i) => !i.superOnly || superAdmin).map((item) => {
+      {items.map((item) => {
         const active = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
         return (
           <Link

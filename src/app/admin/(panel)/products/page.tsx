@@ -14,7 +14,7 @@ export default async function ProductsPage() {
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     include: {
       team: true,
-      images: { where: { deletedAt: null }, orderBy: [{ isCover: 'desc' }, { sortOrder: 'asc' }], take: 1 },
+      images: { where: { deletedAt: null }, orderBy: [{ isCover: 'desc' }, { stage: { sort: 'desc', nulls: 'first' } }, { sortOrder: 'asc' }], take: 1 },
       _count: { select: { images: { where: { deletedAt: null } }, videos: { where: { deletedAt: null } } } },
     },
   });

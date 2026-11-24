@@ -1,25 +1,12 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import Lightbox from 'yet-another-react-lightbox';
-import Zoom from 'yet-another-react-lightbox/plugins/zoom';
-import Slideshow from 'yet-another-react-lightbox/plugins/slideshow';
-import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
-import Counter from 'yet-another-react-lightbox/plugins/counter';
-import 'yet-another-react-lightbox/styles.css';
-import 'yet-another-react-lightbox/plugins/thumbnails.css';
-import 'yet-another-react-lightbox/plugins/counter.css';
-import { IMAGE_SIZES, mediaUrl } from '@/lib/media';
+import { frameFor } from '@/domain/frame';
 import { cn } from '@/lib/format';
+import { PhotoLightbox, type GalleryImage } from './PhotoLightbox';
 import { Picture } from './Picture';
 
-export interface GalleryImage {
-  key: string;
-  width: number;
-  height: number;
-  alt: string;
-  blurDataUrl: string;
-}
+export type { GalleryImage };
 
 /** Mũi tên giống icon của lightbox (.yarl__icon). */
 function Arrow({ dir }: { dir: 'prev' | 'next' }) {
@@ -41,18 +28,9 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
   const count = images.length;
   const go = (delta: number) => setCurrent((i) => (i + delta + count) % count);
   const image = images[current]!;
+  // Khung tự theo hình: ảnh lớn lấy đúng tỉ lệ (dọc/ngang); ảnh nhỏ giữ khung 4:3, hiện đủ ảnh trên nền mờ.
+  const frame = frameFor(image);
 
-  const slides = images.map((img) => ({
-    src: mediaUrl(img.key, 1600),
-    alt: img.alt || title,
-    width: img.width,
-    height: img.height,
-    srcSet: IMAGE_SIZES.map((s) => ({
-      src: mediaUrl(img.key, s),
-      width: s,
-      height: Math.round((img.height / img.width) * s),
-    })),
-  }));
 
   const arrowCls =
     'glass glass-clear absolute top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full';
@@ -60,7 +38,9 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
   return (
     <div>
       <div
-        className="frame-gold group"
+        className="frame-gold group mx-auto max-w-full transition-[width] duration-500 ease-out"
+        // Cao tối đa ~75% màn hình: ảnh dọc thu hẹp chiều ngang và nằm giữa thay vì cao quá màn hình.
+        style={{ width: `min(100%, calc(75svh * ${frame.ratio.toFixed(4)} + 20px))` }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowLeft') go(-1);
           if (e.key === 'ArrowRight') go(1);
@@ -74,7 +54,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
           go(end < start ? 1 : -1);
         }}
       >
-        <div className="frame-inner relative aspect-[4/3]">
+        <div className="frame-inner relative" style={{ aspectRatio: frame.ratio }}>
           <button
             type="button"
             onClick={() => setLightboxIndex(current)}
@@ -89,6 +69,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
               sizes="(min-width: 1024px) 60vw, 100vw"
               fallbackSize={1600}
               priority={current === 0}
+              fit={frame.mode === 'fit' ? 'cover' : 'contain'}
               className="h-full w-full transition-transform duration-700 group-hover:scale-[1.03]"
             />
           </button>
@@ -148,28 +129,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
         </button>
       </div>
 
-      <Lightbox
-        open={lightboxIndex >= 0}
-        index={Math.max(lightboxIndex, 0)}
-        close={() => setLightboxIndex(-1)}
-        on={{ view: ({ index }) => setCurrent(index) }}
-        slides={slides}
-        plugins={[Zoom, Slideshow, Thumbnails, Counter]}
-        zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
-        slideshow={{ delay: 4000 }}
-        thumbnails={{ width: 90, height: 60, border: 1, borderColor: '#d4af37', imageFit: 'cover' }}
-        counter={{ container: { style: { top: 0, bottom: 'unset' } } }}
-        labels={{
-          Previous: 'Ảnh trước',
-          Next: 'Ảnh sau',
-          Close: 'Đóng',
-          Play: 'Trình chiếu',
-          Pause: 'Tạm dừng',
-          'Zoom in': 'Phóng to',
-          'Zoom out': 'Thu nhỏ',
-        }}
-        styles={{ container: { backgroundColor: 'rgba(13, 10, 11, 0.96)' } }}
-      />
+      <PhotoLightbox images={images} title={title} index={lightboxIndex} onClose={() => setLightboxIndex(-1)} onView={setCurrent} />
     </div>
   );
 }

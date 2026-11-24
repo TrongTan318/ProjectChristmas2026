@@ -3,18 +3,19 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { audit } from '@/server/audit';
-import { endAdminSession, getCurrentAdmin, hashPassword, startAdminSession, verifyPassword } from '@/server/auth';
+import { parseLoginId } from '@/domain/access';
+import { endAdminSession, getCurrentUser, hashPassword, startAdminSession, verifyPassword } from '@/server/auth';
 import { prisma } from '@/server/db';
 import { hit } from '@/server/rate-limit';
 import { clientIp } from '@/server/request';
 
 const MAX_FAILED = 5;
 const LOCK_MINUTES = 15;
-const GENERIC_ERROR = 'Email hoặc mật khẩu không đúng.';
+const GENERIC_ERROR = 'Tên đăng nhập hoặc mật khẩu không đúng.';
 let dummyHash: Promise<string> | undefined;
 
 const schema = z.object({
-  email: z.string().trim().toLowerCase().email().max(120),
+  login: z.string().max(120),
   password: z.string().min(1).max(200),
 });
 
@@ -24,11 +25,16 @@ export async function login(_prev: { error: string } | null, form: FormData) {
     return { error: 'Bạn đã thử quá nhiều lần. Vui lòng đợi 15 phút.' };
   }
 
-  const parsed = schema.safeParse({ email: form.get('email'), password: form.get('password') });
-  if (!parsed.success) return { error: GENERIC_ERROR };
-  const { email, password } = parsed.data;
+  const parsed = schema.safeParse({ login: form.get('login'), password: form.get('password') });
+  const loginId = parsed.success ? parseLoginId(parsed.data.login) : null;
+  if (!parsed.success || !loginId) return { error: GENERIC_ERROR };
+  const { password } = parsed.data;
 
-  const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+  // Email (quản trị viên) hoặc tên đăng nhập (tài khoản lớp).
+  const user = await prisma.user.findFirst({
+    where: { ...(loginId.kind === 'email' ? { email: loginId.value } : { username: loginId.value }), deletedAt: null },
+    include: { role: true },
+  });
   if (!user || !user.isActive) {
     // Vẫn băm để thời gian phản hồi tương đương, tránh dò email.
     dummyHash ??= hashPassword('khong-phai-mat-khau-that');
@@ -59,11 +65,11 @@ export async function login(_prev: { error: string } | null, form: FormData) {
   });
   await startAdminSession(user);
   await audit({ userId: user.id, action: 'auth.login', entityType: 'User', entityId: user.id });
-  redirect('/admin');
+  redirect(user.role.code === 'TEAM' ? '/admin/stages' : '/admin');
 }
 
 export async function logout() {
-  const user = await getCurrentAdmin();
+  const user = await getCurrentUser();
   if (user) await audit({ userId: user.id, action: 'auth.logout', entityType: 'User', entityId: user.id });
   await endAdminSession();
   redirect('/admin/login');

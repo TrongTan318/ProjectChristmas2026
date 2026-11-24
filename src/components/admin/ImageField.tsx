@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { IMAGE_ACCEPT } from '@/lib/image-format';
 import { mediaUrl } from '@/lib/media';
 import { btn } from './ui';
 
@@ -40,7 +41,7 @@ export function ImageField({ name, defaultKey, label = 'Ảnh' }: { name: string
         )}
         <label className={`${btn.secondary} cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}>
           {busy ? 'Đang tải…' : key ? 'Đổi ảnh' : 'Chọn ảnh'}
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+          <input type="file" accept={IMAGE_ACCEPT} className="sr-only" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
         </label>
         {key && (
           <button type="button" className={btn.ghost} onClick={() => setKey('')}>Bỏ ảnh</button>
