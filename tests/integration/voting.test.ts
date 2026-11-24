@@ -31,12 +31,20 @@ describe.skipIf(!enabled)('Bình chọn (tích hợp DB)', async () => {
 
   beforeAll(async () => {
     await reset();
-    const role = await prisma.role.create({ data: { code: 'SUPER_ADMIN', name: 'Super Admin' } });
-    userId = (await prisma.user.create({ data: { email: 't@t.vn', name: 'T', passwordHash: 'x', roleId: role.id } })).id;
+    await prisma.role.create({ data: { code: 'SUPER_ADMIN', name: 'Super Admin' } });
   });
 
   beforeEach(async () => {
     await prisma.$executeRawUnsafe('TRUNCATE votes, vote_tokens, token_batches, products, teams, contests CASCADE');
+    // users.team_id tham chiếu teams nên TRUNCATE teams CASCADE xóa luôn users → tạo lại người tạo lô phiếu mỗi lần.
+    const role = await prisma.role.findUniqueOrThrow({ where: { code: 'SUPER_ADMIN' } });
+    userId = (
+      await prisma.user.upsert({
+        where: { email: 't@t.vn' },
+        create: { email: 't@t.vn', name: 'T', passwordHash: 'x', roleId: role.id },
+        update: {},
+      })
+    ).id;
     const contest = await prisma.contest.create({
       data: { slug: `c-${Date.now()}`, name: 'Test', organizer: 'Test', year: 2026, isActive: true, votingStatus: 'OPEN' },
     });
