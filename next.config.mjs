@@ -19,7 +19,7 @@ const csp = [
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  serverExternalPackages: ['pdfkit', 'exceljs', 'sharp', '@node-rs/argon2', 'qrcode'],
+  serverExternalPackages: ['pdfkit', 'exceljs', 'sharp', '@node-rs/argon2', 'qrcode', 'heic-convert'],
   experimental: {
     serverActions: { bodySizeLimit: '2mb' },
   },
