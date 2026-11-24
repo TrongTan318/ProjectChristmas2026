@@ -44,6 +44,17 @@ export const siteSettingsSchema = z.object({
     .string()
     .max(500)
     .default('Cần hỗ trợ? Vui lòng liên hệ bàn hướng dẫn của Ban tổ chức tại nhà thờ.'),
+  /** Tên + mô tả ngắn của 3 khung ảnh giai đoạn trên trang chi tiết đội (áp dụng cho mọi đội). */
+  stage1Title: z.string().trim().max(80).default('Giai đoạn 1'),
+  stage1Note: z.string().trim().max(200).default(''),
+  stage2Title: z.string().trim().max(80).default('Giai đoạn 2'),
+  stage2Note: z.string().trim().max(200).default(''),
+  stage3Title: z.string().trim().max(80).default('Giai đoạn 3'),
+  stage3Note: z.string().trim().max(200).default(''),
+  /** Bật/tắt từng giai đoạn trên trang công khai (admin vẫn tải ảnh được khi tắt). */
+  stage1Enabled: z.boolean().default(true),
+  stage2Enabled: z.boolean().default(true),
+  stage3Enabled: z.boolean().default(true),
   effectsEnabled: z.boolean().default(true),
   rankingTopN: z.number().int().min(3).max(50).default(10),
   seoDescription: z
@@ -53,6 +64,15 @@ export const siteSettingsSchema = z.object({
 });
 
 export type SiteSettings = z.infer<typeof siteSettingsSchema>;
+
+/** Tên + mô tả + bật/tắt 3 giai đoạn (thứ tự 1 → 3); tên để trống thì dùng "Giai đoạn N". */
+export function stageLabels(s: SiteSettings) {
+  return [
+    { stage: 1 as const, title: s.stage1Title || 'Giai đoạn 1', note: s.stage1Note, enabled: s.stage1Enabled },
+    { stage: 2 as const, title: s.stage2Title || 'Giai đoạn 2', note: s.stage2Note, enabled: s.stage2Enabled },
+    { stage: 3 as const, title: s.stage3Title || 'Giai đoạn 3', note: s.stage3Note, enabled: s.stage3Enabled },
+  ];
+}
 export const SITE_SETTINGS_KEY = 'site';
 
 export const getSiteSettings = cache(async (contestId: string): Promise<SiteSettings> =>

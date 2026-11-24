@@ -24,6 +24,7 @@
     "@prisma/client": "^6.16.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.0",
+    "heic-convert": "^2.1.0",
     "jose": "^5.10.0",
     "next": "^15.5.0",
     "pdfkit": "^0.17.1",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",
+    "@types/heic-convert": "^2.1.1",
     "@types/node": "^22.15.0",
     "@types/pdfkit": "^0.17.2",
     "@types/qrcode": "^1.5.5",

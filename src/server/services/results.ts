@@ -18,21 +18,15 @@ export interface RankingRow {
 export interface Results {
   totals: { issued: number; used: number; remaining: number; revoked: number; validVotes: number; invalidVotes: number };
   ranking: RankingRow[];
-  byZone: { zoneId: string | null; name: string; votes: number }[];
   updatedAt: string;
 }
 
 async function computeResults(contestId: string): Promise<Results> {
-  const [tokenGroups, voteGroups, zoneGroups, products, zones] = await Promise.all([
+  const [tokenGroups, voteGroups, products] = await Promise.all([
     prisma.voteToken.groupBy({ by: ['status'], where: { contestId, deletedAt: null }, _count: { _all: true } }),
     prisma.vote.groupBy({
       by: ['productId', 'status'],
       where: { contestId, deletedAt: null },
-      _count: { _all: true },
-    }),
-    prisma.vote.groupBy({
-      by: ['zoneId'],
-      where: { contestId, deletedAt: null, status: 'VALID' },
       _count: { _all: true },
     }),
     prisma.product.findMany({
@@ -44,13 +38,12 @@ async function computeResults(contestId: string): Promise<Results> {
         team: { select: { name: true, className: true } },
         images: {
           where: { deletedAt: null },
-          orderBy: [{ isCover: 'desc' }, { sortOrder: 'asc' }],
+          orderBy: [{ isCover: 'desc' }, { stage: { sort: 'desc', nulls: 'first' } }, { sortOrder: 'asc' }],
           take: 1,
           select: { key: true },
         },
       },
     }),
-    prisma.zone.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } }),
   ]);
 
   const tokenCount = (s: string) => tokenGroups.find((g) => g.status === s)?._count._all ?? 0;
@@ -76,15 +69,6 @@ async function computeResults(contestId: string): Promise<Results> {
     })),
   );
 
-  const zoneName = new Map(zones.map((z) => [z.id, z.name]));
-  const byZone = zones.map((z) => ({
-    zoneId: z.id as string | null,
-    name: z.name,
-    votes: zoneGroups.find((g) => g.zoneId === z.id)?._count._all ?? 0,
-  }));
-  const unassigned = zoneGroups.find((g) => g.zoneId === null || !zoneName.has(g.zoneId));
-  if (unassigned) byZone.push({ zoneId: null, name: 'Chưa gán giáo khu', votes: unassigned._count._all });
-
   const issued = tokenGroups.reduce((s, g) => s + g._count._all, 0);
   return {
     totals: {
@@ -96,7 +80,6 @@ async function computeResults(contestId: string): Promise<Results> {
       invalidVotes,
     },
     ranking,
-    byZone,
     updatedAt: new Date().toISOString(),
   };
 }

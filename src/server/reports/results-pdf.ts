@@ -73,19 +73,6 @@ export async function buildResultsPdf(contest: Contest, exportedBy: string): Pro
   );
   doc.moveDown(1);
 
-  if (r.byZone.length) {
-    doc.font('bold').fontSize(12).fillColor(COLORS.burgundy).text('III. THỐNG KÊ THEO GIÁO KHU', left);
-    doc.moveDown(0.3);
-    doc.font('regular').fontSize(10.5).fillColor(COLORS.ink);
-    for (const z of r.byZone) {
-      const y = doc.y;
-      doc.text(z.name, left + 10, y, { width: width - 120 });
-      doc.text(String(z.votes), left + width - 100, y, { width: 100, align: 'right' });
-      doc.moveDown(0.15);
-    }
-    doc.moveDown(1);
-  }
-
   if (doc.y > doc.page.height - 200) doc.addPage();
   doc.moveDown(1);
   const sigY = doc.y;

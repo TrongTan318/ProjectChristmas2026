@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { requireAdmin, isSuperAdmin } from '@/server/auth';
+import { isSuperAdmin, isTeamUser, requireUser } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { AdminNav } from './AdminNav';
 import { logout } from '../login/actions';
@@ -7,9 +7,12 @@ import { logout } from '../login/actions';
 export const metadata: Metadata = { title: 'Quản trị', robots: { index: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireAdmin();
+  // Layout nhận mọi vai trò; từng trang tự chặn bằng requireAdmin (tài khoản lớp chỉ vào được /admin/stages).
+  const user = await requireUser();
   const contest = await requireActiveContest();
   const superAdmin = isSuperAdmin(user);
+  const team = isTeamUser(user);
+  const roleLabel = team && user.team ? `${user.role.name} ${user.team.className}` : user.role.name;
 
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-900 [color-scheme:light] lg:flex">
@@ -23,10 +26,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <p className="text-xs text-ivory/60">{contest.name}</p>
           </div>
         </div>
-        <AdminNav superAdmin={superAdmin} />
+        <AdminNav superAdmin={superAdmin} team={team} />
         <div className="hidden border-t border-white/10 px-5 py-4 text-sm lg:block">
           <p className="truncate font-medium">{user.name}</p>
-          <p className="truncate text-xs text-ivory/60">{user.role.name}</p>
+          <p className="truncate text-xs text-ivory/60">{roleLabel}</p>
           <form action={logout} className="mt-3">
             <button className="text-sm text-gold-light hover:underline">Đăng xuất</button>
           </form>
@@ -34,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
       <div className="surface-light min-w-0 flex-1">
         <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2 text-sm lg:hidden">
-          <span className="truncate">{user.name} · {user.role.name}</span>
+          <span className="truncate">{user.name} · {roleLabel}</span>
           <form action={logout}>
             <button className="text-burgundy">Đăng xuất</button>
           </form>

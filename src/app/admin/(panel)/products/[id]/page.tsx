@@ -2,11 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
 import { Card, Checkbox, Field, Input, PageHeader, Select, Textarea, btn } from '@/components/admin/ui';
-import { MAX_IMAGES_PER_PRODUCT } from '@/lib/limits';
 import { requireAdmin } from '@/server/auth';
 import { prisma } from '@/server/db';
 import { addYoutubeVideo, deleteProduct, updateProduct } from '../actions';
-import { ImageManager } from './ImageManager';
 import { VideoManager } from './VideoManager';
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +14,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     where: { id, deletedAt: null },
     include: {
       team: true,
-      images: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } },
+      _count: { select: { images: { where: { deletedAt: null } } } },
       videos: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } },
     },
   });
@@ -75,12 +73,16 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         </ActionForm>
       </Card>
 
-      <Card title={`Album ảnh (${product.images.length}/${MAX_IMAGES_PER_PRODUCT})`}>
-        <ImageManager
-          productId={product.id}
-          max={MAX_IMAGES_PER_PRODUCT}
-          images={product.images.map((i) => ({ id: i.id, key: i.key, alt: i.alt, isCover: i.isCover }))}
-        />
+      <Card title={`Ảnh (${product._count.images})`}>
+        <p className="text-sm text-zinc-700">
+          Ảnh của sản phẩm được tải theo 3 giai đoạn, và chọn ảnh đại diện (★) ngay tại đó.
+        </p>
+        <Link
+          href={product.teamId ? `/admin/stages?team=${product.teamId}` : '/admin/stages'}
+          className={`${btn.primary} mt-3`}
+        >
+          ❖ Mở trang Ảnh giai đoạn
+        </Link>
       </Card>
 
       <Card title="Video">

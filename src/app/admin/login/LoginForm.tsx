@@ -8,10 +8,12 @@ export function LoginForm() {
   return (
     <form action={action} className="mt-8 space-y-4">
       <label className="block">
-        <span className="mb-1 block text-sm text-ivory/80">Email</span>
+        <span className="mb-1 block text-sm text-ivory/80">Email hoặc tên đăng nhập</span>
         <input
-          name="email"
-          type="email"
+          name="login"
+          type="text"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           autoComplete="username"
           className="w-full rounded-lg border border-gold/30 bg-ink px-3 py-2.5 text-ivory focus:border-gold focus:outline-none"

@@ -14,7 +14,7 @@ const ROWS = 4;
  */
 export async function renderBallotsPdf(
   ballots: GeneratedBallot[],
-  info: { contestName: string; organizer: string; baseUrl: string; zoneName?: string | null },
+  info: { contestName: string; organizer: string; baseUrl: string },
 ): Promise<Buffer> {
   const doc = createPdf({ margin: 0, info: { Title: `Phiếu bình chọn — ${info.contestName}` } });
   const pageW = doc.page.width;
@@ -62,7 +62,6 @@ export async function renderBallotsPdf(
     const tw = x + cellW - pad - tx;
     doc.font('bold').fontSize(11).fillColor(COLORS.ink).text('PHIẾU BÌNH CHỌN', tx, qrY, { width: tw });
     doc.font('bold').fontSize(9).fillColor(COLORS.burgundy).text(`Số: ${formatSerial(b.serial)}`, tx, doc.y + 1, { width: tw });
-    if (info.zoneName) doc.font('regular').fontSize(7.5).fillColor(COLORS.muted).text(info.zoneName, tx, doc.y, { width: tw });
 
     // Mã nhập tay
     const codeY = qrY + qrSize + 2.5 * MM;

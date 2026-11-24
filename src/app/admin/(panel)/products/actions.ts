@@ -8,11 +8,12 @@ import { slugify } from '@/lib/format';
 import { parseYoutubeId } from '@/lib/media';
 import { bool, int, runAction, str, UserError } from '@/server/action';
 import { audit } from '@/server/audit';
-import { requireAdmin } from '@/server/auth';
+import { requireAdmin, requireProductAccess } from '@/server/auth';
 import { invalidatePublic } from '@/server/cache';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
 import { removeByKey } from '@/server/storage';
+import { MAX_FEATURED } from '@/domain/stage';
 
 async function uniqueSlug(contestId: string, base: string, excludeId?: string) {
   const root = slugify(base) || 'hang-da';
@@ -27,6 +28,7 @@ function refresh(productId?: string) {
   invalidatePublic();
   revalidatePath('/admin/products');
   if (productId) revalidatePath(`/admin/products/${productId}`);
+  revalidatePath('/admin/stages');
 }
 
 export async function createProduct(_prev: ActionState, form: FormData): Promise<ActionState> {
@@ -110,15 +112,19 @@ export async function deleteProduct(_prev: ActionState, form: FormData): Promise
 
 // ===== Ảnh =====
 
+/**
+ * Ảnh + người thao tác. Quản trị viên sửa mọi ảnh; tài khoản lớp chỉ ảnh của lớp mình
+ * (các thao tác ảnh dùng chung cho /admin/stages).
+ */
 async function loadImage(imageId: string) {
-  const image = await prisma.productImage.findFirst({ where: { id: imageId, deletedAt: null } });
+  const image = await prisma.productImage.findFirst({ where: { id: String(imageId), deletedAt: null } });
   if (!image) throw new Error('Không tìm thấy ảnh');
-  return image;
+  const { user } = await requireProductAccess(image.productId);
+  return { image, user };
 }
 
 export async function setCoverImage(imageId: string) {
-  const user = await requireAdmin();
-  const image = await loadImage(imageId);
+  const { image, user } = await loadImage(imageId);
   await prisma.$transaction([
     prisma.productImage.updateMany({ where: { productId: image.productId }, data: { isCover: false } }),
     prisma.productImage.update({ where: { id: imageId }, data: { isCover: true } }),
@@ -127,28 +133,46 @@ export async function setCoverImage(imageId: string) {
   refresh(image.productId);
 }
 
+/** Bật/tắt ♥ "ảnh đẹp" (khung đầu trang chi tiết đội). Tối đa MAX_FEATURED ảnh mỗi lớp. */
+export async function toggleFeaturedImage(imageId: string): Promise<{ error?: string }> {
+  const { image, user } = await loadImage(imageId);
+  if (!image.featuredAt) {
+    const count = await prisma.productImage.count({ where: { productId: image.productId, deletedAt: null, featuredAt: { not: null } } });
+    // Trả lỗi về (không throw) để thông báo hiện được ở bản production.
+    if (count >= MAX_FEATURED) return { error: `Tối đa ${MAX_FEATURED} ảnh đẹp. Bỏ ♥ ảnh khác trước.` };
+  }
+  const featuredAt = image.featuredAt ? null : new Date();
+  await prisma.productImage.update({ where: { id: image.id }, data: { featuredAt } });
+  await audit({ userId: user.id, action: 'image.featured', entityType: 'ProductImage', entityId: image.id, after: { featured: !!featuredAt } });
+  refresh(image.productId);
+  return {};
+}
+
 export async function moveImage(imageId: string, direction: -1 | 1) {
-  await requireAdmin();
-  const image = await loadImage(imageId);
-  const images = await prisma.productImage.findMany({ where: { productId: image.productId, deletedAt: null }, orderBy: { sortOrder: 'asc' } });
+  if (direction !== -1 && direction !== 1) return;
+  const { image, user } = await loadImage(imageId);
+  // Chỉ đổi thứ tự trong cùng một giai đoạn.
+  const images = await prisma.productImage.findMany({
+    where: { productId: image.productId, stage: image.stage, deletedAt: null },
+    orderBy: { sortOrder: 'asc' },
+  });
   const index = images.findIndex((i) => i.id === imageId);
   const target = index + direction;
   if (target < 0 || target >= images.length) return;
   [images[index], images[target]] = [images[target]!, images[index]!];
   await prisma.$transaction(images.map((img, i) => prisma.productImage.update({ where: { id: img.id }, data: { sortOrder: i } })));
+  await audit({ userId: user.id, action: 'image.move', entityType: 'ProductImage', entityId: image.id, after: { stage: image.stage, from: index, to: target } });
   refresh(image.productId);
 }
 
 export async function updateImageAlt(imageId: string, form: FormData) {
-  await requireAdmin();
-  const image = await loadImage(imageId);
+  const { image } = await loadImage(imageId);
   await prisma.productImage.update({ where: { id: imageId }, data: { alt: str(form, 'alt').slice(0, 200) } });
   refresh(image.productId);
 }
 
 export async function deleteImage(imageId: string) {
-  const user = await requireAdmin();
-  const image = await loadImage(imageId);
+  const { image, user } = await loadImage(imageId);
   const product = await prisma.product.findUnique({ where: { id: image.productId }, include: { _count: { select: { images: { where: { deletedAt: null } } } } } });
   if (product?.status === 'PUBLISHED' && product._count.images <= 1) {
     throw new Error('Sản phẩm đang xuất bản cần ít nhất 1 ảnh.');
@@ -156,7 +180,11 @@ export async function deleteImage(imageId: string) {
   await prisma.productImage.update({ where: { id: imageId }, data: { deletedAt: new Date(), isCover: false } });
   await removeByKey(image.key);
   if (image.isCover) {
-    const next = await prisma.productImage.findFirst({ where: { productId: image.productId, deletedAt: null }, orderBy: { sortOrder: 'asc' } });
+    // Ảnh đại diện mới: ảnh đầu của giai đoạn mới nhất còn ảnh.
+    const next = await prisma.productImage.findFirst({
+      where: { productId: image.productId, deletedAt: null },
+      orderBy: [{ stage: { sort: 'desc', nulls: 'first' } }, { sortOrder: 'asc' }],
+    });
     if (next) await prisma.productImage.update({ where: { id: next.id }, data: { isCover: true } });
   }
   await audit({ userId: user.id, action: 'image.delete', entityType: 'ProductImage', entityId: imageId, before: image });

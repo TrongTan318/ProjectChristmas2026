@@ -10,6 +10,7 @@ export function Picture({
   className,
   priority,
   fallbackSize = 800,
+  fit = 'cover',
 }: {
   imageKey: string | null | undefined;
   alt: string;
@@ -18,6 +19,8 @@ export function Picture({
   className?: string;
   priority?: boolean;
   fallbackSize?: ImageSize;
+  /** cover: lấp đầy khung (có thể cắt); contain: hiện đủ ảnh, nền mờ phía sau. */
+  fit?: 'cover' | 'contain';
 }) {
   if (!imageKey) {
     return (
@@ -45,7 +48,7 @@ export function Picture({
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : 'auto'}
       decoding="async"
-      className={cn('object-cover', className)}
+      className={cn(fit === 'contain' ? 'object-contain' : 'object-cover', className)}
       style={
         blurDataUrl
           ? { backgroundImage: `url(${blurDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }

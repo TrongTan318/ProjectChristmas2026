@@ -42,6 +42,7 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Số phiếu + xếp hạng **luôn công khai**, `ResultsBoard` polling 10s (đã bỏ `resultsPublic/resultsRealtime` theo yêu cầu người dùng). "Nổi bật" = top 3 theo phiếu, bằng phiếu xét `viewCount` (`pickFeatured`, `listFeatured`); 0 phiếu thì không hiện. Không chọn tay.
 - Lượt xem: trình duyệt gọi `POST /api/views` (`ViewTracker`), vì HTML công khai bị Nginx microcache; `recordView` chống trùng 1 IP/sản phẩm/30 phút.
 - Thao tác nhạy cảm (mở/khóa, sinh/vô hiệu phiếu, hủy phiếu bầu, đổi kết quả, tài khoản): Super Admin + nhập lại mật khẩu (`requireSuperAdminWithPassword`) + `audit()`.
+- Vai trò **Lớp** (`TEAM`, 1 tài khoản/lớp, gắn `users.team_id`, đăng nhập bằng `username`): chỉ vào `/admin/stages` của lớp mình — tải/xóa/đổi vị trí ảnh, ★ đại diện, đổi tên/mô tả/ẩn giai đoạn. **Mặc định từ chối**: `getCurrentAdmin`/`requireAdmin` không nhận tài khoản lớp (mọi trang/API cũ tự chặn); chỉ chỗ đã kiểm tra theo lớp mới dùng `getCurrentUser`/`requireUser` + `requireProductAccess` (`canManageProduct` trong `src/domain/access.ts`). Tạo tài khoản lớp ở `/admin/users` (Super Admin + mật khẩu; tạo nhanh: mật khẩu ngẫu nhiên chỉ hiện 1 lần).
 - Soft delete (`deletedAt`); khi xóa mềm bản ghi có cột unique thì đổi tên/slug để không chặn bản ghi mới.
 - Giờ lưu UTC, hiển thị `Asia/Ho_Chi_Minh` (`src/lib/format.ts`).
 - Nội dung do admin nhập hiển thị dạng text (`whitespace-pre-line`), **không render HTML**.
@@ -51,9 +52,47 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Server action: `'use server'`, chỉ export hàm async; dạng `(prev: ActionState, form: FormData)` bọc bằng `runAction`, validate bằng Zod, gọi `requireAdmin/requireSuperAdmin…`, sau khi ghi gọi `invalidatePublic()` (hoặc `invalidate('r:')` cho kết quả) + `revalidatePath`.
 - Trang đều `force-dynamic` (root layout); hiệu năng dựa vào cache bộ nhớ (`cached()`, TTL 5–30s) + microcache Nginx 10s. Ứng dụng giả định **1 instance**.
 - Ảnh: biến thể `${key}-{400|800|1600}.webp`, dùng `mediaUrl/mediaSrcSet` và component `Picture`.
+- Ảnh sản phẩm: mọi ảnh thuộc một giai đoạn (cột `stage` 1–3; ảnh cũ đã chuyển vào GĐ 1 bằng migration), tải và chọn ảnh đại diện ★ ở `/admin/stages`; API upload bắt buộc `stage`. Trang `/trien-lam/<slug>`: các khung giai đoạn (`StageGallery`, `<details>` thu gọn/mở) nằm trên mô tả ngắn, xếp 3 → 2 → 1, mở sẵn giai đoạn mới nhất có ảnh (`defaultOpenStage`). Ảnh đại diện: đánh dấu `isCover` → giai đoạn mới nhất (`pickCover`, `COVER_ORDER`). Tên/mô tả/bật-tắt giai đoạn: mặc định ở Cài đặt (`stageNTitle/Note/Enabled`, `stageLabels`), mỗi lớp ghi đè ở `products.stage_config` (`mergeStageLabels`); giai đoạn tắt thì khách không thấy, ảnh vẫn giữ. **Ảnh đẹp (♥)**: `product_images.featured_at` (null = không; thời điểm ♥ để sắp thứ tự), tối đa `MAX_FEATURED` = 12/lớp, bấm ♥ trên ảnh giai đoạn ở `/admin/stages` (tài khoản lớp làm được cho lớp mình); hiện ở khung **đầu trang chi tiết đội, không tiêu đề, luôn mở**, trên các giai đoạn; kiểu khung + ẩn/hiện ở `stage_config.featured` (`parseFeaturedConfig`), chỉ ảnh của giai đoạn đang hiện (`pickFeatured`). Ghi `stage_config` luôn gộp (`mergeStageConfig`). Khung trình chiếu tự theo hình (`frameFor`): ảnh rộng ≥ 800px lấy đúng tỉ lệ, cao tối đa ~75svh; ảnh nhỏ giữ khung 4:3, `object-contain` trên nền mờ.
+- **Vật phẩm cá nhân** (`/vat-pham-ca-nhan`, admin `/admin/personal-items`, bảng `personal_items` + `personal_item_images`): phần **riêng biệt** — chỉ trưng bày, không giá, không bình chọn, không gắn cuộc thi hay lớp (dùng chung mọi năm); chỉ quản trị viên sửa. Trường: tên, người làm, ý nghĩa, `details` (các dòng "Tên mục – Nội dung", `parseDetails`), **đúng 3 ảnh** (`pickSlots`): ★ đại diện → thẻ khung giữa; ảnh phụ thứ 1 → nền mờ khung trên; thứ 2 → nền mờ khung dưới (chữ đặt trực tiếp lên ảnh). Cả 3 khung gọn trong 1 màn hình `100svh` (ưu tiên điện thoại); khung giữa là băng thẻ cuộn hít CSS (`PersonalShowcase`), vật phẩm ở giữa quyết định nội dung khung trên/dưới; "Xem thêm" mở lớp phủ đủ ý nghĩa + thông tin thêm.
+- Giáo xứ không có giáo khu: bảng `zones` và cột `zone_id` còn trong DB nhưng đã gỡ khỏi giao diện, báo cáo và sinh phiếu (luôn `zoneId: null`). Không thêm lại khi chưa hỏi.
 - Màu: burgundy `#3B0907`, burgundy-light `#542C2A`, pine `#113621`, ink `#0F0908`, gold `#D4AF37`, ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`); nền tối xen kẽ `.bg-museum` (ánh đỏ) / `.bg-forest` (ánh xanh).
 - Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn.
 - Trang `/v/*`, `/binh-chon`, `/vote` phải nhẹ: chữ ≥ 18px, nút ≥ 48px.
+
+## Quy trình khi thêm tính năng / sửa code
+
+### 1. Lên kế hoạch (chưa sửa gì)
+- Đọc code liên quan, nêu rõ: hiện trạng → thay đổi đề xuất → file sẽ sửa → ảnh hưởng/rủi ro.
+- Việc chưa rõ hoặc có nhiều cách làm → hỏi người dùng, kèm phương án khuyến nghị.
+- Thay đổi chạm quy tắc nghiệp vụ (phiếu, token, phân quyền, kết quả) → nêu góc nhìn Security/QA và hỏi riêng.
+- **Chỉ bắt đầu sửa khi người dùng đồng ý.** Đồng ý cho việc này không áp dụng cho việc khác.
+
+### 2. Viết code
+- Mở file đang sửa trong VS Code (`code -r -g "<file>:<dòng>"`) để người dùng theo dõi; lệnh terminal phải ghi ra trước khi chạy.
+- Theo "Cấu trúc", "Quy ước code" và "Quy tắc nghiệp vụ" ở trên: logic trong `src/server/`, route/action chỉ validate (Zod) + kiểm tra quyền + gọi service; TypeScript strict, không `any`.
+- Đổi `prisma/schema.prisma` → tạo migration và báo người còn lại.
+- Không viết thêm tài liệu thiết kế; chỉ cập nhật CLAUDE.md khi quy tắc thay đổi.
+
+### 3. Test
+- Logic bình chọn, token, phân quyền, chống gian lận: **bắt buộc có hoặc sửa unit test**.
+- Trước khi báo xong, chạy trong container Node 22: `npm ci && npx prisma generate && npx tsc --noEmit && npx vitest run tests/unit`
+- Test fail → báo nguyên văn output, không báo "xong".
+
+### 4. QC (kiểm tra trên web)
+- Build bằng `scripts/docker-build.ps1`, kiểm tra trang liên quan (mã HTTP, ảnh chụp màn hình khi sửa giao diện), cả laptop và điện thoại nếu có chạm giao diện.
+- Báo rõ cái gì đã kiểm tra, cái gì chưa (ví dụ cần đăng nhập admin mới thử được).
+- Người dùng duyệt → `docker-accept.ps1`; không ưng → `docker-rollback.ps1`.
+
+### 5. Đưa lên GitHub
+- Chỉ khi người dùng yêu cầu. Theo `CONTRIBUTING.md`: nhánh `feature/…`/`fix/…` từ `develop` → Pull Request → CI ✅ → merge; `develop` → `main` qua PR rồi gắn tag `vX.Y.Z`.
+- Trước khi push: đánh giá ảnh hưởng, hỏi ý kiến; backup bằng tag `backup/<ngày>/<nhánh>`.
+
+### Checklist trước khi báo hoàn thành
+- [ ] Người dùng đã duyệt kế hoạch
+- [ ] Typecheck + unit test qua (có test mới nếu chạm phần bình chọn)
+- [ ] Đã build và kiểm tra trên web; nêu rõ phần chưa kiểm tra
+- [ ] CLAUDE.md cập nhật nếu quy tắc thay đổi
+- [ ] Chưa commit/push nếu chưa được yêu cầu
 
 ## Khác với tài liệu kiến trúc
 

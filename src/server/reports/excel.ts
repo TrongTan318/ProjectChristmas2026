@@ -55,22 +55,16 @@ export async function buildResultsWorkbook(contest: Contest): Promise<Buffer> {
   }
   styleHeader(ranking);
 
-  const zones = wb.addWorksheet('Theo giáo khu');
-  zones.columns = [{ header: 'Giáo khu', key: 'name', width: 32 }, { header: 'Số phiếu hợp lệ', key: 'votes', width: 18 }];
-  zones.addRows(results.byZone.map((z) => ({ name: z.name, votes: z.votes })));
-  styleHeader(zones);
-
   const votes = await prisma.vote.findMany({
     where: { contestId: contest.id, deletedAt: null },
     orderBy: { createdAt: 'asc' },
-    include: { token: { select: { serial: true } }, product: { select: { name: true } }, zone: { select: { name: true } } },
+    include: { token: { select: { serial: true } }, product: { select: { name: true } } },
   });
   const detail = wb.addWorksheet('Chi tiết phiếu bầu');
   detail.columns = [
     { header: 'Seri phiếu', key: 'serial', width: 12 },
     { header: 'Thời gian', key: 'time', width: 20 },
     { header: 'Sản phẩm', key: 'product', width: 40 },
-    { header: 'Giáo khu', key: 'zone', width: 24 },
     { header: 'Trạng thái', key: 'status', width: 12 },
     { header: 'Lý do hủy', key: 'reason', width: 32 },
   ];
@@ -79,7 +73,6 @@ export async function buildResultsWorkbook(contest: Contest): Promise<Buffer> {
       serial: formatSerial(v.token.serial),
       time: formatDateTime(v.createdAt),
       product: v.product.name,
-      zone: v.zone?.name ?? '',
       status: v.status === 'VALID' ? 'Hợp lệ' : 'Đã hủy',
       reason: v.invalidReason ?? '',
     });
@@ -89,13 +82,12 @@ export async function buildResultsWorkbook(contest: Contest): Promise<Buffer> {
   const tokens = await prisma.voteToken.findMany({
     where: { contestId: contest.id, deletedAt: null },
     orderBy: { serial: 'asc' },
-    include: { batch: { select: { label: true } }, zone: { select: { name: true } } },
+    include: { batch: { select: { label: true } } },
   });
   const tokenSheet = wb.addWorksheet('Danh sách phiếu');
   tokenSheet.columns = [
     { header: 'Seri', key: 'serial', width: 10 },
     { header: 'Lô', key: 'batch', width: 28 },
-    { header: 'Giáo khu', key: 'zone', width: 24 },
     { header: 'Trạng thái', key: 'status', width: 12 },
     { header: 'Thời điểm dùng', key: 'used', width: 20 },
     { header: 'Lý do vô hiệu', key: 'reason', width: 30 },
@@ -104,7 +96,6 @@ export async function buildResultsWorkbook(contest: Contest): Promise<Buffer> {
     tokenSheet.addRow({
       serial: formatSerial(t.serial),
       batch: t.batch.label,
-      zone: t.zone?.name ?? '',
       status: STATUS_TOKEN[t.status],
       used: t.usedAt ? formatDateTime(t.usedAt) : '',
       reason: t.revokeReason ?? '',

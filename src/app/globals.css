@@ -372,6 +372,40 @@ body {
   }
 }
 
+/* Trang Vật phẩm cá nhân: nội dung khung trên/dưới hiện lại khi đổi vật phẩm. */
+@keyframes showcase-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.showcase-in {
+  animation: showcase-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.showcase-in-late {
+  animation: showcase-in 0.55s 0.12s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+/* Ảnh nền mới hiện mờ dần đè lên ảnh cũ (không chớp). */
+@keyframes showcase-fade {
+  from {
+    opacity: 0;
+  }
+}
+.showcase-fade {
+  animation: showcase-fade 0.6s ease-out both;
+}
+/* Ẩn thanh cuộn của băng vật phẩm (vẫn cuộn/vuốt được). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Trang trí Giáng Sinh (.motion-keep) vẫn chạy như tuyết rơi — theo yêu cầu người dùng. */
 @media (prefers-reduced-motion: reduce) {
   *:not(.motion-keep, .motion-keep *),

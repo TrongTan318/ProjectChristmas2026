@@ -6,7 +6,7 @@ import { formatDateTime, formatNumber } from '@/lib/format';
 import { isSuperAdmin, requireAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
-import { revokeTokens, updateBatchZone } from './actions';
+import { revokeTokens } from './actions';
 import { TokenBatchForm } from './TokenBatchForm';
 
 const PAGE_SIZE = 50;
@@ -28,20 +28,19 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
   const serial = Number(sp.serial) || undefined;
 
   const where: Prisma.VoteTokenWhereInput = { contestId: contest.id, deletedAt: null, status, serial };
-  const [groups, zones, batches, tokens, total] = await Promise.all([
+  const [groups, batches, tokens, total] = await Promise.all([
     prisma.voteToken.groupBy({ by: ['status'], where: { contestId: contest.id, deletedAt: null }, _count: { _all: true } }),
-    prisma.zone.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } }),
     prisma.tokenBatch.findMany({
       where: { contestId: contest.id, deletedAt: null },
       orderBy: { serialFrom: 'asc' },
-      include: { zone: true, createdBy: { select: { name: true } } },
+      include: { createdBy: { select: { name: true } } },
     }),
     prisma.voteToken.findMany({
       where,
       orderBy: { serial: 'asc' },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
-      include: { batch: { select: { label: true } }, zone: { select: { name: true } }, vote: { select: { product: { select: { name: true } }, status: true } } },
+      include: { batch: { select: { label: true } }, vote: { select: { product: { select: { name: true } }, status: true } } },
     }),
     prisma.voteToken.count({ where }),
   ]);
@@ -71,7 +70,7 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
             ⚠ Vì lý do bảo mật, hệ thống <strong>không lưu mã gốc</strong> của phiếu. File PDF và Excel (có mã nhập tay, ảnh QR) chỉ được tải <strong>một lần</strong> ngay khi tạo.
             Nếu làm mất file, hãy vô hiệu lô đó và tạo lô mới.
           </p>
-          <TokenBatchForm zones={zones.map((z) => ({ id: z.id, name: z.name }))} />
+          <TokenBatchForm />
         </Card>
       ) : (
         <p className="rounded-lg bg-zinc-100 p-3 text-sm text-zinc-700">Chỉ Super Admin được sinh hoặc vô hiệu phiếu.</p>
@@ -80,7 +79,7 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
       <Card title="Các lô phiếu">
         <Table>
           <thead>
-            <tr><th>Lô</th><th>Dải seri</th><th>Số lượng</th><th>Đã dùng</th><th>Giáo khu</th><th>Tạo bởi</th></tr>
+            <tr><th>Lô</th><th>Dải seri</th><th>Số lượng</th><th>Đã dùng</th><th>Tạo bởi</th></tr>
           </thead>
           <tbody>
             {batches.map((b) => (
@@ -89,20 +88,10 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
                 <td className="tabular-nums">{formatSerial(b.serialFrom)} → {formatSerial(b.serialTo)}</td>
                 <td className="tabular-nums">{b.quantity}</td>
                 <td className="tabular-nums">{usedByBatch.find((u) => u.batchId === b.id)?._count._all ?? 0}</td>
-                <td>
-                  <ActionForm action={updateBatchZone} className="flex items-center gap-2">
-                    <input type="hidden" name="batchId" value={b.id} />
-                    <select name="zoneId" defaultValue={b.zoneId ?? ''} className="rounded border border-zinc-300 px-2 py-1 text-sm">
-                      <option value="">— Chưa gán —</option>
-                      {zones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
-                    </select>
-                    <SubmitButton variant="ghost">Lưu</SubmitButton>
-                  </ActionForm>
-                </td>
                 <td className="text-zinc-600">{b.createdBy.name}<br /><span className="text-xs">{formatDateTime(b.createdAt)}</span></td>
               </tr>
             ))}
-            {batches.length === 0 && <tr><td colSpan={6} className="py-6 text-center text-zinc-500">Chưa có lô phiếu nào.</td></tr>}
+            {batches.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-zinc-500">Chưa có lô phiếu nào.</td></tr>}
           </tbody>
         </Table>
       </Card>
@@ -142,7 +131,7 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
         </form>
         <Table>
           <thead>
-            <tr><th>Seri</th><th>Trạng thái</th><th>Lô</th><th>Giáo khu</th><th>Thời điểm dùng</th><th>Bình chọn cho</th></tr>
+            <tr><th>Seri</th><th>Trạng thái</th><th>Lô</th><th>Thời điểm dùng</th><th>Bình chọn cho</th></tr>
           </thead>
           <tbody>
             {tokens.map((t) => (
@@ -153,7 +142,6 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
                   {t.revokeReason && <span className="ml-2 text-xs text-zinc-500">{t.revokeReason}</span>}
                 </td>
                 <td className="text-zinc-600">{t.batch.label}</td>
-                <td className="text-zinc-600">{t.zone?.name ?? '—'}</td>
                 <td className="text-zinc-600">{formatDateTime(t.usedAt)}</td>
                 <td>
                   {t.vote ? (
@@ -165,7 +153,7 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
                 </td>
               </tr>
             ))}
-            {tokens.length === 0 && <tr><td colSpan={6} className="py-6 text-center text-zinc-500">Không có phiếu phù hợp.</td></tr>}
+            {tokens.length === 0 && <tr><td colSpan={5}className="py-6 text-center text-zinc-500">Không có phiếu phù hợp.</td></tr>}
           </tbody>
         </Table>
         <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} makeHref={makeHref} />

@@ -7,10 +7,20 @@ import { getResults } from './results';
 
 const TTL = 30_000;
 
+/**
+ * Thứ tự ảnh khi chọn ảnh đại diện: ảnh đánh dấu đại diện → ảnh chung (stage null)
+ * → ảnh giai đoạn mới nhất (3 → 1). Cùng quy tắc với `pickCover` trong domain/stage.
+ */
+export const COVER_ORDER = [
+  { isCover: 'desc' as const },
+  { stage: { sort: 'desc' as const, nulls: 'first' as const } },
+  { sortOrder: 'asc' as const },
+];
+
 /** Ảnh đại diện trước, kèm vài ảnh tiếp theo cho slideshow trên thẻ sản phẩm. */
 const coverSelect = {
   where: { deletedAt: null },
-  orderBy: [{ isCover: 'desc' as const }, { sortOrder: 'asc' as const }],
+  orderBy: COVER_ORDER,
   take: 5,
   select: { key: true, width: true, height: true, blurDataUrl: true, alt: true },
 };
@@ -49,7 +59,7 @@ export function getProductBySlug(contestId: string, slug: string) {
       where: { contestId, slug, status: 'PUBLISHED', deletedAt: null },
       include: {
         team: true,
-        images: { where: { deletedAt: null }, orderBy: [{ isCover: 'desc' }, { sortOrder: 'asc' }] },
+        images: { where: { deletedAt: null }, orderBy: COVER_ORDER },
         videos: { where: { deletedAt: null }, orderBy: [{ isIntro: 'desc' }, { sortOrder: 'asc' }] },
       },
     }),
