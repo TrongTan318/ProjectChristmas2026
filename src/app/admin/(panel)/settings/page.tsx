@@ -100,7 +100,7 @@ export default async function SettingsPage() {
           </div>
           <Field label="Hướng dẫn hỗ trợ trên trang bình chọn"><Input name="voteHelp" defaultValue={settings.voteHelp} maxLength={500} /></Field>
           <fieldset id="giai-doan" className="scroll-mt-24 rounded-lg border border-zinc-200 p-4">
-            <legend className="px-1 text-sm font-semibold">3 giai đoạn ảnh (trang chi tiết đội, áp dụng cho mọi đội)</legend>
+            <legend className="px-1 text-sm font-semibold">3 giai đoạn ảnh — mặc định cho các lớp (mỗi lớp tự đổi tên / ẩn ở trang Ảnh giai đoạn)</legend>
             <p className="mb-3 text-sm text-zinc-600">Bỏ chọn "Hiện trên website" để ẩn giai đoạn chưa tới; admin vẫn tải ảnh trước được.</p>
             <div className="grid gap-4 sm:grid-cols-3">
               {([1, 2, 3] as const).map((n) => (

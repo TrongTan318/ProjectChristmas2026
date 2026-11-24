@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { parseStage } from '@/domain/stage';
 import { MAX_IMAGES_PER_STAGE } from '@/lib/limits';
 import { audit } from '@/server/audit';
-import { getCurrentAdmin } from '@/server/auth';
+import { ForbiddenError, getCurrentUser, requireProductAccess, type SessionUser } from '@/server/auth';
 import { invalidatePublic } from '@/server/cache';
 import { prisma } from '@/server/db';
 import { ImageError, MAX_IMAGE_BYTES, processImage } from '@/server/images';
@@ -11,12 +11,17 @@ import { isSameOrigin } from '@/server/request';
 /** Upload 1 ảnh / request (client gửi tuần tự để hiện tiến độ và tránh request quá lớn). */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: 'Yêu cầu không hợp lệ.' }, { status: 403 });
-  const user = await getCurrentAdmin();
-  if (!user) return NextResponse.json({ error: 'Phiên đăng nhập đã hết hạn.' }, { status: 401 });
+  if (!(await getCurrentUser())) return NextResponse.json({ error: 'Phiên đăng nhập đã hết hạn.' }, { status: 401 });
 
   const { id } = await params;
-  const product = await prisma.product.findFirst({ where: { id, deletedAt: null } });
-  if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm.' }, { status: 404 });
+  // Quản trị viên: mọi sản phẩm; tài khoản lớp: chỉ sản phẩm của lớp mình.
+  let user: SessionUser;
+  try {
+    ({ user } = await requireProductAccess(id));
+  } catch (error) {
+    if (error instanceof ForbiddenError) return NextResponse.json({ error: error.message }, { status: 403 });
+    throw error;
+  }
 
   const form = await request.formData().catch(() => null);
   const file = form?.get('file');

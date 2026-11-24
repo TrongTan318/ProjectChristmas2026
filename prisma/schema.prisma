@@ -11,6 +11,8 @@ datasource db {
 enum RoleCode {
   SUPER_ADMIN
   ADMIN
+  /// Tài khoản lớp: chỉ quản lý ảnh/giai đoạn của lớp mình.
+  TEAM
 }
 
 enum VotingStatus {
@@ -53,10 +55,14 @@ model Role {
 
 model User {
   id             String    @id @default(cuid())
-  email          String    @unique
+  /// Admin đăng nhập bằng email; tài khoản lớp (TEAM) dùng `username`, có thể không có email.
+  email          String?   @unique
+  username       String?   @unique
   name           String
   passwordHash   String    @map("password_hash")
   roleId         Int       @map("role_id")
+  /// Chỉ với vai trò TEAM: lớp (đội) mà tài khoản được quản lý.
+  teamId         String?   @map("team_id")
   isActive       Boolean   @default(true) @map("is_active")
   failedLogins   Int       @default(0) @map("failed_logins")
   lockedUntil    DateTime? @map("locked_until")
@@ -67,11 +73,13 @@ model User {
   deletedAt      DateTime? @map("deleted_at")
 
   role             Role         @relation(fields: [roleId], references: [id])
+  team             Team?        @relation(fields: [teamId], references: [id])
   auditLogs        AuditLog[]
   tokenBatches     TokenBatch[]
   invalidatedVotes Vote[]
 
   @@index([roleId])
+  @@index([teamId])
   @@map("users")
 }
 
@@ -169,6 +177,7 @@ model Team {
 
   contest Contest  @relation(fields: [contestId], references: [id])
   product Product?
+  users   User[]
 
   @@unique([contestId, name])
   @@index([contestId, sortOrder])
@@ -189,6 +198,8 @@ model Product {
   status           ProductStatus @default(DRAFT)
   sortOrder        Int           @default(0) @map("sort_order")
   viewCount        Int           @default(0) @map("view_count")
+  /// Tên/mô tả/bật-tắt giai đoạn riêng của lớp, ghi đè mặc định ở Cài đặt: {"1": {title, note, enabled}, ...}.
+  stageConfig      Json?         @map("stage_config")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
   deletedAt        DateTime?     @map("deleted_at")
@@ -217,6 +228,8 @@ model ProductImage {
   /// Giai đoạn thực hiện 1–3 (trang chi tiết đội); null = ảnh đại diện/ảnh chung.
   stage       Int?
   sortOrder   Int       @default(0) @map("sort_order")
+  /// Đánh dấu ♥ "ảnh đẹp" (khung đầu trang chi tiết đội); null = không; thời điểm đánh dấu dùng để sắp thứ tự.
+  featuredAt  DateTime? @map("featured_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
@@ -406,4 +419,50 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([userId])
   @@map("audit_logs")
+}
+
+/// Vật phẩm cá nhân (trang /vat-pham-ca-nhan): chỉ trưng bày, không bình chọn,
+/// không gắn cuộc thi hay lớp — dùng chung mọi năm.
+model PersonalItem {
+  id        String    @id @default(cuid())
+  name      String
+  /// Người làm (không bắt buộc).
+  maker     String    @default("")
+  /// Ý nghĩa — hiển thị dạng text.
+  meaning   String    @default("") @db.Text
+  /// Các dòng "Tên mục – Nội dung" admin tự thêm: [{ "label": "...", "value": "..." }].
+  details   Json      @default("[]")
+  isActive  Boolean   @default(true) @map("is_active")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  images PersonalItemImage[]
+
+  @@index([isActive, sortOrder])
+  @@map("personal_items")
+}
+
+model PersonalItemImage {
+  id          String    @id @default(cuid())
+  itemId      String    @map("item_id")
+  /// Khóa lưu trữ gốc; các biến thể là `${key}-${size}.webp`.
+  key         String    @unique
+  width       Int
+  height      Int
+  blurDataUrl String    @map("blur_data_url") @db.Text
+  /// Chú thích hiện trên thẻ ảnh (không bắt buộc).
+  caption     String    @default("")
+  /// Ảnh chính: thẻ ở khung giữa.
+  isMain      Boolean   @default(false) @map("is_main")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  item PersonalItem @relation(fields: [itemId], references: [id])
+
+  @@index([itemId, sortOrder])
+  @@map("personal_item_images")
 }

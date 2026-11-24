@@ -22,6 +22,7 @@ async function main() {
     update: {},
   });
   await prisma.role.upsert({ where: { code: 'ADMIN' }, create: { code: 'ADMIN', name: 'Admin' }, update: {} });
+  await prisma.role.upsert({ where: { code: 'TEAM' }, create: { code: 'TEAM', name: 'Lớp' }, update: {} });
 
   const email = (process.env.SEED_ADMIN_EMAIL ?? '').trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD ?? '';

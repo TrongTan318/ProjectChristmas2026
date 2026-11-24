@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { hash, verify } from '@node-rs/argon2';
 import type { RoleCode } from '@prisma/client';
+import { canManageProduct, isStaffRole } from '@/domain/access';
 import { prisma } from './db';
 import { env } from './env';
 import { signJwt, verifyJwt } from './jwt';
@@ -46,25 +47,61 @@ export async function endAdminSession() {
   (await cookies()).delete(ADMIN_COOKIE);
 }
 
-export const getCurrentAdmin = cache(async () => {
+/** Người đang đăng nhập — mọi vai trò, kể cả tài khoản lớp. Chỉ dùng ở nơi đã kiểm tra quyền theo lớp. */
+export const getCurrentUser = cache(async () => {
   const raw = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!raw) return null;
   const payload = await verifyJwt<{ uid: string; ver: number }>(raw, AUDIENCE);
   if (!payload) return null;
   const user = await prisma.user.findFirst({
     where: { id: payload.uid, isActive: true, deletedAt: null },
-    include: { role: true },
+    include: { role: true, team: { select: { id: true, name: true, className: true, deletedAt: true } } },
   });
   if (!user || user.sessionVersion !== payload.ver) return null;
   return user;
 });
 
-export type AdminUser = NonNullable<Awaited<ReturnType<typeof getCurrentAdmin>>>;
+export type SessionUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
-export async function requireAdmin(): Promise<AdminUser> {
-  const user = await getCurrentAdmin();
+/**
+ * Quản trị viên (Super Admin / Admin). Tài khoản lớp → null, nên mọi trang/API đang dùng hàm này
+ * tự động chặn tài khoản lớp (mặc định từ chối).
+ */
+export const getCurrentAdmin = cache(async () => {
+  const user = await getCurrentUser();
+  return user && isStaffRole(user.role.code) ? user : null;
+});
+
+export type AdminUser = SessionUser;
+
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getCurrentUser();
   if (!user) redirect('/admin/login');
   return user;
+}
+
+export async function requireAdmin(): Promise<AdminUser> {
+  const user = await requireUser();
+  // Tài khoản lớp vào trang quản trị khác → về trang ảnh của lớp mình.
+  if (!isStaffRole(user.role.code)) redirect('/admin/stages');
+  return user;
+}
+
+export function isTeamUser(user: { role: { code: RoleCode } }) {
+  return user.role.code === 'TEAM';
+}
+
+/** Kiểm tra quyền sửa ảnh/giai đoạn của một sản phẩm: quản trị viên mọi sản phẩm, tài khoản lớp chỉ lớp mình. */
+export async function requireProductAccess(productId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new ForbiddenError('Phiên đăng nhập đã hết hạn.');
+  const product = await prisma.product.findFirst({ where: { id: productId, deletedAt: null } });
+  if (!product) throw new ForbiddenError('Không tìm thấy sản phẩm.');
+  const teamId = user.team && !user.team.deletedAt ? user.teamId : null;
+  if (!canManageProduct({ roleCode: user.role.code, teamId }, product)) {
+    throw new ForbiddenError('Bạn chỉ được chỉnh sửa trang của lớp mình.');
+  }
+  return { user, product };
 }
 
 export function isSuperAdmin(user: { role: { code: RoleCode } }) {
