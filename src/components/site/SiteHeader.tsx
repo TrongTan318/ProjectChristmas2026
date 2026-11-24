@@ -8,6 +8,7 @@ import { cn } from '@/lib/format';
 const NAV = [
   { href: '/', label: 'Trang chủ' },
   { href: '/trien-lam', label: 'Triển lãm' },
+  { href: '/vat-pham-ca-nhan', label: 'Vật phẩm cá nhân' },
   { href: '/ket-qua', label: 'Kết quả' },
   { href: '/tin-tuc', label: 'Tin tức' },
 ];
@@ -52,13 +53,13 @@ export function SiteHeader({ title }: { title: string }) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Điều hướng chính">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Điều hướng chính">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'rounded-full px-4 py-2 text-[15px] font-semibold transition-colors',
+                'rounded-full px-3 py-2 text-[15px] font-semibold whitespace-nowrap transition-colors xl:px-4',
                 isActive(item.href)
                   ? 'bg-gold/15 text-gold-light ring-1 ring-gold/50'
                   : 'text-ivory hover:bg-ivory/10 hover:text-gold-light',
@@ -74,7 +75,7 @@ export function SiteHeader({ title }: { title: string }) {
 
         <button
           type="button"
-          className="glass glass-clear inline-flex h-11 w-11 items-center justify-center rounded-full md:hidden"
+          className="glass glass-clear inline-flex h-11 w-11 items-center justify-center rounded-full lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? 'Đóng menu' : 'Mở menu'}
@@ -87,7 +88,7 @@ export function SiteHeader({ title }: { title: string }) {
       </div>
 
       {open && (
-        <nav id="mobile-nav" className="border-t border-gold/15 px-4 pt-2 pb-6 md:hidden" aria-label="Điều hướng">
+        <nav id="mobile-nav" className="border-t border-gold/15 px-4 pt-2 pb-6 lg:hidden" aria-label="Điều hướng">
           {NAV.map((item) => (
             <Link
               key={item.href}
