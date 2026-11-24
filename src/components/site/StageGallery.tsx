@@ -1,10 +1,14 @@
-import { Gallery, type GalleryImage } from './Gallery';
+import type { StageLayout } from '@/domain/stage';
+import { StageLayoutView } from './layouts/StageLayoutView';
+import type { GalleryImage } from './PhotoLightbox';
 
 export interface StageBlock {
   stage: number;
   title: string;
   note: string;
   images: GalleryImage[];
+  /** Kiểu khung lớp chọn cho giai đoạn (mặc định Trình chiếu). */
+  layout: StageLayout;
   /** Mở sẵn khi vào trang (giai đoạn mới nhất có ảnh). */
   open: boolean;
 }
@@ -50,7 +54,7 @@ export function StageGallery({ stages, productName }: { stages: StageBlock[]; pr
 
           <div className="px-4 pb-5 sm:px-5">
             {s.images.length > 0 ? (
-              <Gallery images={s.images} title={`${productName} — ${s.title}`} />
+              <StageLayoutView layout={s.layout} images={s.images} title={`${productName} — ${s.title}`} />
             ) : (
               <div className="flex aspect-[16/9] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gold/35 bg-ink/40 text-ivory/55">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>

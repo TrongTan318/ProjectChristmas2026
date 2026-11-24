@@ -9,7 +9,8 @@ import { YouTubeFacade } from '@/components/site/YouTubeFacade';
 import { fileUrl, mediaUrl } from '@/lib/media';
 import { ViewCount } from '@/components/site/ViewCount';
 import { ViewTracker } from '@/components/site/ViewTracker';
-import { defaultOpenStage, groupByStage } from '@/domain/stage';
+import { StageLayoutView } from '@/components/site/layouts/StageLayoutView';
+import { defaultOpenStage, groupByStage, mergeStageLabels, parseFeaturedConfig, pickFeatured } from '@/domain/stage';
 import { getSiteSettings, requireActiveContest, stageLabels } from '@/server/contest';
 import { getProductBySlug, listProducts } from '@/server/services/content';
 import { getVoteSession } from '@/server/vote-session';
@@ -59,17 +60,24 @@ export default async function ProductPage({ params }: Props) {
 
   const [all, voteSession, settings] = await Promise.all([listProducts(contest.id), getVoteSession(), getSiteSettings(contest.id)]);
 
-  // Chỉ giai đoạn admin bật; xếp từ mới nhất (3) xuống cũ nhất (1); mở sẵn giai đoạn mới nhất có ảnh.
+  // Tên/ẩn-hiện giai đoạn: cấu hình riêng của lớp ghi đè mặc định ở Cài đặt.
+  // Chỉ giai đoạn đang bật; xếp từ mới nhất (3) xuống cũ nhất (1); mở sẵn giai đoạn mới nhất có ảnh.
   const byStage = groupByStage(product.images);
-  const visible = stageLabels(settings).filter((l) => l.enabled).reverse();
+  const visible = mergeStageLabels(stageLabels(settings), product.stageConfig).filter((l) => l.enabled).reverse();
   const openStage = defaultOpenStage(visible.map((l) => ({ stage: l.stage, count: byStage[l.stage].length })));
   const stages = visible.map((l) => ({
     stage: l.stage,
     title: l.title,
     note: l.note,
+    layout: l.layout,
     open: l.stage === openStage,
     images: byStage[l.stage].map((i) => ({ key: i.key, width: i.width, height: i.height, alt: i.alt, blurDataUrl: i.blurDataUrl })),
   }));
+  // Ảnh đẹp (♥): khung đầu trang, không tiêu đề; chỉ ảnh của giai đoạn đang hiện.
+  const featuredConfig = parseFeaturedConfig(product.stageConfig);
+  const featured = featuredConfig.enabled
+    ? pickFeatured(product.images, visible.map((l) => l.stage)).map((i) => ({ key: i.key, width: i.width, height: i.height, alt: i.alt, blurDataUrl: i.blurDataUrl }))
+    : [];
 
   const position = all.findIndex((p) => p.id === product.id);
   const prev = position > 0 ? all[position - 1] : all[all.length - 1];
@@ -105,6 +113,13 @@ export default async function ProductPage({ params }: Props) {
             <ViewCount count={product.viewCount} className="mt-3 text-sm text-ivory/60" />
             <Ornament className="mt-6" />
           </div>
+
+          {/* Ảnh đẹp: hiện ngay khi vào trang, không tiêu đề, trên các giai đoạn */}
+          {featured.length > 0 && (
+            <section aria-label="Ảnh đẹp" className="mx-auto mt-8 max-w-4xl text-left">
+              <StageLayoutView layout={featuredConfig.layout} images={featured} title={product.name} />
+            </section>
+          )}
 
           {/* Ảnh theo giai đoạn (3 → 2 → 1), nằm trên phần mô tả */}
           {stages.length > 0 && (

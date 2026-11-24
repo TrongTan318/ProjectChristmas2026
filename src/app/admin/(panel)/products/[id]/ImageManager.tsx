@@ -3,14 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { btn } from '@/components/admin/ui';
+import { IMAGE_ACCEPT } from '@/lib/image-format';
 import { mediaUrl } from '@/lib/media';
-import { deleteImage, moveImage, setCoverImage, updateImageAlt } from '../actions';
+import { deleteImage, moveImage, setCoverImage, toggleFeaturedImage, updateImageAlt } from '../actions';
 
 interface Img {
   id: string;
   key: string;
   alt: string;
   isCover: boolean;
+  /** Đã đánh dấu ♥ ảnh đẹp (khung đầu trang chi tiết đội). */
+  isFeatured: boolean;
 }
 
 /** Quản lý ảnh của một giai đoạn; ★ đặt ảnh đại diện của cả sản phẩm (thẻ triển lãm, chia sẻ). */
@@ -63,14 +66,14 @@ export function ImageManager({ productId, images, max, stage }: { productId: str
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
+            accept={IMAGE_ACCEPT}
             multiple
             className="sr-only"
             disabled={images.length >= max || !!progress}
             onChange={(e) => e.target.files && upload(e.target.files)}
           />
         </label>
-        <span className="text-sm text-zinc-500">JPG/PNG/WebP, tối đa 15MB/ảnh. Ảnh được tự động tối ưu và xóa thông tin vị trí GPS.</span>
+        <span className="text-sm text-zinc-500">JPG/PNG/WebP/HEIC (iPhone), tối đa 15MB/ảnh. Ảnh được tự động tối ưu và xóa thông tin vị trí GPS.</span>
       </div>
       {progress && <p className="mt-3 text-sm text-sky-700" role="status">{progress}</p>}
       {errors.length > 0 && (
@@ -86,6 +89,20 @@ export function ImageManager({ productId, images, max, stage }: { productId: str
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={mediaUrl(img.key, 400)} alt={img.alt} className="h-full w-full object-cover" />
               {img.isCover && <span className="absolute top-2 left-2 rounded bg-amber-400 px-2 py-0.5 text-xs font-semibold text-ink">Ảnh đại diện</span>}
+              <button
+                type="button"
+                onClick={() =>
+                  run(async () => {
+                    const r = await toggleFeaturedImage(img.id);
+                    if (r.error) throw new Error(r.error);
+                  })
+                }
+                aria-pressed={img.isFeatured}
+                title={img.isFeatured ? 'Bỏ khỏi ảnh đẹp' : 'Thêm vào ảnh đẹp (khung đầu trang của lớp)'}
+                className={`absolute top-2 right-2 rounded-full px-2.5 py-1 text-xs font-semibold shadow ${img.isFeatured ? 'bg-rose-600 text-white' : 'bg-white/90 text-zinc-700 hover:bg-white'}`}
+              >
+                {img.isFeatured ? '♥ Ảnh đẹp' : '♡ Ảnh đẹp'}
+              </button>
             </div>
             <div className="space-y-2 p-2">
               <form action={(fd) => run(() => updateImageAlt(img.id, fd))} className="flex gap-1">
