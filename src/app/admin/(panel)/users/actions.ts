@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { isValidUsername, normalizeUsername, PASSWORD_ALPHABET, suggestUsername } from '@/domain/access';
 import type { ActionState } from '@/lib/action';
+import { teamLabel } from '@/lib/format';
 import { bool, runAction, str, UserError } from '@/server/action';
 import { audit } from '@/server/audit';
 import { hashPassword, requireSuperAdmin, requireSuperAdminWithPassword } from '@/server/auth';
@@ -139,14 +140,15 @@ export async function createTeamAccounts(_prev: ActionState, form: FormData) {
     const taken = new Set(existing.map((u) => u.username!));
     const lines: string[] = [];
     for (const team of missing) {
-      const name = suggestUsername(team.className || team.name, taken);
+      const name = suggestUsername(team.className || team.name || '', taken);
       taken.add(name);
       const pass = generatePassword();
+      const label = teamLabel(team);
       const user = await prisma.user.create({
-        data: { username: name, name: `${team.className} · ${team.name}`, passwordHash: await hashPassword(pass), roleId: role.id, teamId: team.id },
+        data: { username: name, name: label, passwordHash: await hashPassword(pass), roleId: role.id, teamId: team.id },
       });
       await audit({ userId: actor.id, action: 'user.create', entityType: 'User', entityId: user.id, after: { username: name, teamId: team.id, role: 'TEAM', bulk: true } });
-      lines.push(`${team.className} · ${team.name}  —  tên đăng nhập: ${name}  —  mật khẩu: ${pass}`);
+      lines.push(`${label}  —  tên đăng nhập: ${name}  —  mật khẩu: ${pass}`);
     }
     revalidatePath('/admin/users');
     return [

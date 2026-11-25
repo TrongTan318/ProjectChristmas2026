@@ -1,6 +1,6 @@
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
 import { Badge, Card, Checkbox, Field, Input, PageHeader, Select } from '@/components/admin/ui';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, teamLabel } from '@/lib/format';
 import { requireSuperAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
@@ -29,7 +29,7 @@ export default async function UsersPage() {
     <>
       <option value="">— Chọn lớp —</option>
       {teams.map((t) => (
-        <option key={t.id} value={t.id}>{t.className} · {t.name}</option>
+        <option key={t.id} value={t.id}>{teamLabel(t)}</option>
       ))}
     </>
   );
@@ -104,7 +104,7 @@ export default async function UsersPage() {
             <span className="text-sm text-zinc-500">{u.username ?? u.email}</span>
             <Badge tone={ROLE_TONE[u.role.code]}>{u.role.name}</Badge>
             {u.role.code === 'TEAM' && (
-              u.team ? <span className="text-sm text-zinc-600">{u.team.className} · {u.team.name}</span> : <Badge tone="red">Chưa gắn lớp</Badge>
+              u.team ? <span className="text-sm text-zinc-600">{teamLabel(u.team)}</span> : <Badge tone="red">Chưa gắn lớp</Badge>
             )}
             {!u.isActive && <Badge tone="red">Đã khóa</Badge>}
             {u.lockedUntil && u.lockedUntil > new Date() && <Badge tone="amber">Tạm khóa đăng nhập</Badge>}

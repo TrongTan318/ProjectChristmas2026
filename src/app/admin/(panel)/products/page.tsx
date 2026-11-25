@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Badge, PageHeader, Table, btn } from '@/components/admin/ui';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, teamLabel } from '@/lib/format';
 import { mediaUrl } from '@/lib/media';
 import { requireAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
@@ -51,7 +51,7 @@ export default async function ProductsPage() {
               <td>
                 <Link href={`/admin/products/${p.id}`} className="font-medium text-burgundy hover:underline">{p.name}</Link>
               </td>
-              <td className="text-zinc-600">{p.team ? `${p.team.name} · ${p.team.className}` : '—'}</td>
+              <td className="text-zinc-600">{p.team ? teamLabel(p.team) : '—'}</td>
               <td className="text-zinc-600">{p._count.images} ảnh · {p._count.videos} video</td>
               <td className="tabular-nums">{formatNumber(p.viewCount)}</td>
               <td>{p.status === 'PUBLISHED' ? <Badge tone="green">Đã xuất bản</Badge> : <Badge tone="amber">Nháp</Badge>}</td>
