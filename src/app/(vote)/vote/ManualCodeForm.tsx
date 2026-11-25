@@ -14,8 +14,10 @@ export function ManualCodeForm() {
         required
         autoComplete="off"
         autoCapitalize="characters"
+        autoCorrect="off"
         spellCheck={false}
         inputMode="text"
+        enterKeyHint="go"
         maxLength={8}
         placeholder="XXXXX"
         className="w-full rounded-xl border-2 border-ink/30 bg-ivory px-4 py-4 text-center font-mono text-2xl tracking-widest uppercase focus:border-burgundy focus:outline-none"

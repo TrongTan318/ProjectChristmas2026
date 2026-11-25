@@ -5,6 +5,10 @@ import { requireAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
 import { getResults, getVotesByDay, getVotesByHour } from '@/server/services/results';
+import { tokenAttemptStats } from '@/server/services/voting';
+
+/** Quá ngưỡng này mã sai trong 1 giờ thì nghi có người dò mã (người nhập nhầm bình thường ít hơn nhiều). */
+const SUSPICIOUS_FAILS_PER_HOUR = 100;
 import { BarChartCard, LineChartCard } from './Charts';
 
 const STATE_LABEL = {
@@ -29,6 +33,7 @@ export default async function DashboardPage() {
   const totalProducts = products.reduce((s, p) => s + p._count._all, 0);
   const state = STATE_LABEL[getVotingState(contest)];
   const t = results.totals;
+  const attempts = tokenAttemptStats();
 
   return (
     <div>
@@ -59,7 +64,22 @@ export default async function DashboardPage() {
         <Stat label="Phiếu đã dùng" value={formatNumber(t.used)} tone="green" hint={t.issued ? `${((t.used / t.issued) * 100).toFixed(1)}%` : undefined} />
         <Stat label="Phiếu chưa dùng" value={formatNumber(t.remaining)} tone="gold" />
         <Stat label="Phiếu vô hiệu" value={formatNumber(t.revoked)} />
+        <Stat label="Nhập mã sai (1 giờ qua)" value={formatNumber(attempts.failsLastHour)} hint="Mã không tồn tại" />
+        <Stat label="Lượt bị chặn tạm (1 giờ qua)" value={formatNumber(attempts.blockedLastHour)} hint="Do thử mã quá nhiều" />
       </div>
+
+      {attempts.failsLastHour >= SUSPICIOUS_FAILS_PER_HOUR && (
+        <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+          ⚠ Có {formatNumber(attempts.failsLastHour)} lần nhập mã không tồn tại trong 1 giờ qua — cao bất thường, có thể có người đang dò mã.
+          Theo dõi tab Phiếu bầu (phiếu nghi vấn cùng mạng); nếu cần, khóa bình chọn tạm thời ở Cài đặt.
+        </p>
+      )}
+      {attempts.blockedLastHour > 0 && attempts.failsLastHour < SUSPICIOUS_FAILS_PER_HOUR && (
+        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          Có {formatNumber(attempts.blockedLastHour)} lượt bị chặn tạm vì thử mã quá nhiều. Nếu đang có đông người bình chọn cùng Wi-Fi nhà thờ,
+          hãy hướng dẫn họ tắt Wi-Fi và dùng 4G. Số liệu tính từ lần khởi động website gần nhất.
+        </p>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card title="Top sản phẩm">
