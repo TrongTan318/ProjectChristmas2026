@@ -57,7 +57,7 @@ Test tích hợp: `RUN_INTEGRATION=true DATABASE_URL=<db test riêng> npx vitest
 - Tên đội không bắt buộc (nhiều lớp chỉ có tên lớp): `teams.name` lưu `NULL` khi trống (không lưu chuỗi rỗng — vướng `UNIQUE(contest_id, name)`); hiển thị "Lớp · Tên đội" luôn qua `teamLabel()` (`src/lib/format.ts`).
 - Giáo xứ không có giáo khu: bảng `zones` và cột `zone_id` còn trong DB nhưng đã gỡ khỏi giao diện, báo cáo và sinh phiếu (luôn `zoneId: null`). Không thêm lại khi chưa hỏi.
 - Màu: burgundy `#3B0907`, burgundy-light `#542C2A`, pine `#113621`, ink `#0F0908`, gold `#D4AF37`, ivory — token trong `src/app/globals.css` (Tailwind v4 `@theme`); nền tối xen kẽ `.bg-museum` (ánh đỏ) / `.bg-forest` (ánh xanh).
-- Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn.
+- Nút: kiểu kính mờ — `.btn-glass` (nút chính, kính xanh cây thông), `.btn-glass-clear` (nút phụ); chất liệu rời `.glass` + `.glass-green|clear|red`. Vùng nền sáng bọc `.surface-light` (trang bình chọn, admin) để kính đậm hơn. Hover viết trong CSS phải nằm trong `@media (hover: hover) and (pointer: fine)` (điện thoại bị "dính" hover), phản hồi chạm dùng `:active`.
 - Trang `/v/*`, `/binh-chon`, `/vote` phải nhẹ: chữ ≥ 18px, nút ≥ 48px.
 
 ## Quy trình khi thêm tính năng / sửa code

@@ -34,8 +34,8 @@ export const VOTE_MESSAGES: Record<VoteErrorCode, { title: string; body: string 
     body: 'Vui lòng quét lại mã QR trên phiếu để tiếp tục.',
   },
   RATE_LIMITED: {
-    title: 'Thao tác quá nhanh',
-    body: 'Bạn đã thử quá nhiều lần. Vui lòng đợi vài phút rồi thử lại.',
+    title: 'Tạm thời bị chặn',
+    body: 'Thiết bị này (hoặc mạng Wi-Fi đang dùng chung) đã thử mã quá nhiều lần. Hãy tắt Wi-Fi, dùng 4G rồi quét lại mã QR, hoặc nhờ Ban tổ chức hỗ trợ.',
   },
 };
 

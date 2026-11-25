@@ -85,6 +85,8 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [volumeSupported, setVolumeSupported] = useState(false);
   const [volumeOpen, setVolumeOpen] = useState(false);
+  // Điện thoại: thu gọn thành 1 nút tròn để không che nội dung; chạm vào mới bung đủ nút. Từ sm luôn bung.
+  const [expanded, setExpanded] = useState(false);
 
   /** Nạp bài ngẫu nhiên kế tiếp; hết vòng thì xáo lại (tránh lặp ngay bài vừa phát). */
   const loadNext = useCallback(
@@ -160,20 +162,24 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
     };
   }, [tracks]);
 
-  // Ô âm lượng: chạm ra ngoài hoặc bấm Esc thì đóng.
+  // Ô âm lượng / cụm nút đang mở (điện thoại): chạm ra ngoài hoặc bấm Esc thì đóng.
   useEffect(() => {
-    if (!volumeOpen) return;
-    const onPointer = (e: PointerEvent) => {
-      if (e.target instanceof Node && !controlsRef.current?.contains(e.target)) setVolumeOpen(false);
+    if (!volumeOpen && !expanded) return;
+    const close = () => {
+      setVolumeOpen(false);
+      setExpanded(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setVolumeOpen(false);
+    const onPointer = (e: PointerEvent) => {
+      if (e.target instanceof Node && !controlsRef.current?.contains(e.target)) close();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
     document.addEventListener('pointerdown', onPointer);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('pointerdown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [volumeOpen]);
+  }, [volumeOpen, expanded]);
 
   if (tracks.length === 0) return null;
 
@@ -231,9 +237,30 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
               />
             </div>
           )}
+          {!expanded && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              aria-expanded={false}
+              aria-controls="music-controls"
+              aria-label={playing ? 'Nhạc nền đang phát — mở điều khiển' : 'Nhạc nền đang tắt — mở điều khiển'}
+              className="glass glass-clear grid size-14 place-items-center rounded-full !bg-ink/55 text-gold sm:hidden"
+            >
+              {playing ? (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4zM14 3.2v2.1a7 7 0 010 13.4v2.1a9 9 0 000-17.6z" />
+                </svg>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M16.5 12A4.5 4.5 0 0014 8v2.2l2.5 2.5V12zM19 12a7 7 0 01-.6 2.8l1.5 1.5A9 9 0 0014 3.2v2.1a7 7 0 015 6.7zM4.3 3L3 4.3 7.7 9H3v6h4l5 5v-6.7l4.3 4.3a7 7 0 01-2.3 1.2v2.1a9 9 0 003.7-1.8l2 2 1.3-1.3L4.3 3zM12 4L9.9 6.1 12 8.2V4z" />
+                </svg>
+              )}
+            </button>
+          )}
           <div
+            id="music-controls"
             // Kính trong, thêm lớp tối để vẫn rõ trên trang nền sáng (trang bình chọn)
-            className="glass glass-clear flex items-center gap-1 rounded-full !bg-ink/55 p-1"
+            className={`glass glass-clear items-center gap-1 rounded-full !bg-ink/55 p-1 sm:flex ${expanded ? 'flex' : 'hidden'}`}
           >
             <button
               type="button"
@@ -282,6 +309,19 @@ export function MusicPlayer({ tracks }: { tracks: Track[] }) {
                 </svg>
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                setVolumeOpen(false);
+                setExpanded(false);
+              }}
+              aria-label="Thu gọn điều khiển nhạc"
+              className="grid size-12 place-items-center rounded-full text-ivory/70 hover:bg-ivory/10 sm:hidden"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

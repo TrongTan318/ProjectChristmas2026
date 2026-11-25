@@ -7,10 +7,24 @@ import { hit, isOver } from '../rate-limit';
 import { invalidate } from '../cache';
 import type { VoteSession } from '../vote-session';
 
-// Nhiều người cùng dùng Wi-Fi nhà thờ (chung IP), nên giới hạn khá rộng;
-// entropy 80 bit đã đủ chống dò mã, rate limit chủ yếu chặn spam.
+// Mã chỉ 5 ký tự (25 bit, ~33,5 triệu mã; 1.000 phiếu → cứ ~33.000 lần đoán trúng 1 mã), nên rate limit
+// theo IP là lớp chống dò chính: 50 lần sai/giờ/IP ≈ 0,04 mã/ngày cho mỗi IP. Đổi lại, nhiều người
+// dùng chung IP (Wi-Fi nhà thờ, 4G của nhà mạng) có thể bị chặn chung → theo dõi ở Tổng quan admin.
 const CHECK_LIMIT_PER_MIN = 60;
 const FAIL_LIMIT_PER_HOUR = 50;
+const HOUR = 3_600_000;
+
+// Thống kê 1 giờ gần nhất cho trang Tổng quan (trong bộ nhớ, mất khi khởi động lại — đủ để cảnh báo).
+const stats = globalThis as unknown as { __tokenFails?: number[]; __tokenBlocks?: number[] };
+function record(list: number[]) {
+  list.push(Date.now());
+  if (list.length > 10_000) list.splice(0, list.length - 10_000);
+}
+const countLastHour = (list: number[] | undefined) => (list ?? []).filter((t) => t > Date.now() - HOUR).length;
+
+export function tokenAttemptStats() {
+  return { failsLastHour: countLastHour(stats.__tokenFails), blockedLastHour: countLastHour(stats.__tokenBlocks) };
+}
 
 export type TokenCheck =
   | { ok: true; tokenId: string; contestId: string; serial: number }
@@ -18,11 +32,16 @@ export type TokenCheck =
 
 export async function checkToken(raw: string, ip: string): Promise<TokenCheck> {
   const failKey = `tokfail:${ip}`;
-  if (isOver(failKey, FAIL_LIMIT_PER_HOUR)) return { ok: false, code: 'RATE_LIMITED' };
-  if (!hit(`tok:${ip}`, CHECK_LIMIT_PER_MIN, 60_000)) return { ok: false, code: 'RATE_LIMITED' };
+  const blocked = (): TokenCheck => {
+    record((stats.__tokenBlocks ??= []));
+    return { ok: false, code: 'RATE_LIMITED' };
+  };
+  if (isOver(failKey, FAIL_LIMIT_PER_HOUR)) return blocked();
+  if (!hit(`tok:${ip}`, CHECK_LIMIT_PER_MIN, 60_000)) return blocked();
 
   const fail = (code: VoteErrorCode): TokenCheck => {
-    hit(failKey, FAIL_LIMIT_PER_HOUR, 3_600_000);
+    hit(failKey, FAIL_LIMIT_PER_HOUR, HOUR);
+    record((stats.__tokenFails ??= []));
     return { ok: false, code };
   };
 
