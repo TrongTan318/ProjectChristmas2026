@@ -1,16 +1,17 @@
 import Link from 'next/link';
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
 import { Badge, Card, Field, Input, PageHeader, Textarea, btn } from '@/components/admin/ui';
+import { teamLabel } from '@/lib/format';
 import { requireAdmin } from '@/server/auth';
 import { requireActiveContest } from '@/server/contest';
 import { prisma } from '@/server/db';
 import { createTeam, deleteTeam, updateTeam } from './actions';
 
-function TeamFields({ team }: { team?: { name: string; className: string; leaderName: string | null; members: string | null; sortOrder: number } }) {
+function TeamFields({ team }: { team?: { name: string | null; className: string; leaderName: string | null; members: string | null; sortOrder: number } }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Tên đội *">
-        <Input name="name" required maxLength={120} defaultValue={team?.name} placeholder="Đội Thiên Thần" />
+      <Field label="Tên đội" hint="Không bắt buộc — để trống nếu lớp không đặt tên đội">
+        <Input name="name" maxLength={120} defaultValue={team?.name ?? ''} placeholder="Đội Thiên Thần" />
       </Field>
       <Field label="Lớp *">
         <Input name="className" required maxLength={120} defaultValue={team?.className} placeholder="Lớp 1" />
@@ -57,7 +58,9 @@ export default async function TeamsPage() {
             <details key={t.id} className="group rounded-xl border border-zinc-200 bg-white shadow-sm">
               <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3">
                 <span className="w-16 shrink-0 text-sm text-zinc-500">{t.className}</span>
-                <span className="flex-1 font-medium">{t.name}</span>
+                <span className="flex-1 font-medium">
+                  {t.name ?? <span className="font-normal text-zinc-400 italic">Chưa đặt tên đội</span>}
+                </span>
                 {product ? (
                   <Link href={`/admin/products/${product.id}`} className="text-sm text-burgundy hover:underline">
                     {product.name} {product.status === 'PUBLISHED' ? <Badge tone="green">Đã xuất bản</Badge> : <Badge tone="amber">Nháp</Badge>}
@@ -78,7 +81,7 @@ export default async function TeamsPage() {
                     )}
                   </div>
                 </ActionForm>
-                <ActionForm action={deleteTeam} confirmMessage={`Xóa đội “${t.name}”?`} className="mt-3">
+                <ActionForm action={deleteTeam} confirmMessage={`Xóa đội “${teamLabel(t)}”?`} className="mt-3">
                   <input type="hidden" name="id" value={t.id} />
                   <SubmitButton variant="ghost" className="!text-red-600">Xóa đội</SubmitButton>
                 </ActionForm>
