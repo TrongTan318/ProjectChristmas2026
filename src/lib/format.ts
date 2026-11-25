@@ -61,3 +61,8 @@ export function slugify(input: string): string {
 export function cn(...classes: (string | false | null | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+/** "Lớp · Tên đội"; tên đội không bắt buộc → chỉ "Lớp". */
+export function teamLabel(team: { className: string; name: string | null }): string {
+  return [team.className.trim(), team.name?.trim()].filter(Boolean).join(' · ');
+}

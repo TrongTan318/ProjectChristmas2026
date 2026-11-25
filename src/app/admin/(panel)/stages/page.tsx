@@ -10,7 +10,7 @@ import {
   STAGE_NOTE_MAX,
   STAGE_TITLE_MAX,
 } from '@/domain/stage';
-import { cn } from '@/lib/format';
+import { cn, teamLabel } from '@/lib/format';
 import { MAX_IMAGES_PER_STAGE } from '@/lib/limits';
 import { mediaUrl } from '@/lib/media';
 import { isTeamUser, requireUser } from '@/server/auth';
@@ -112,7 +112,7 @@ export default async function StagesPage({ searchParams }: { searchParams: Promi
                     )}
                   >
                     <span className="font-medium">{t.className}</span>
-                    <span className={t.id === selected?.id ? 'text-ivory/80' : 'text-zinc-500'}> · {t.name}</span>
+                    {t.name && <span className={t.id === selected?.id ? 'text-ivory/80' : 'text-zinc-500'}> · {t.name}</span>}
                     <span className={cn('ml-2 text-xs tabular-nums', t.id === selected?.id ? 'text-ivory/80' : 'text-zinc-500')} title="Số ảnh giai đoạn 1 · 2 · 3">
                       {counts[1].length}·{counts[2].length}·{counts[3].length}
                     </span>
@@ -126,7 +126,7 @@ export default async function StagesPage({ searchParams }: { searchParams: Promi
 
       {selected && !product && (
         <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
-          Lớp <strong>{selected.name}</strong> chưa có sản phẩm.{' '}
+          Lớp <strong>{teamLabel(selected)}</strong> chưa có sản phẩm.{' '}
           {teamUser ? (
             'Hãy liên hệ ban tổ chức để tạo sản phẩm cho lớp.'
           ) : (
@@ -139,7 +139,7 @@ export default async function StagesPage({ searchParams }: { searchParams: Promi
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">
-              {selected.className} · {selected.name} — <span className="font-normal text-zinc-600">{product.name}</span>
+              {teamLabel(selected)} — <span className="font-normal text-zinc-600">{product.name}</span>
             </h2>
             {product.status === 'PUBLISHED' ? (
               <Link href={`/trien-lam/${product.slug}`} target="_blank" className={btn.secondary}>Xem trang của lớp ↗</Link>

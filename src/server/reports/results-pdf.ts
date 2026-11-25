@@ -1,5 +1,5 @@
 import 'server-only';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, teamLabel } from '@/lib/format';
 import type { Contest } from '../contest';
 import { getResults } from '../services/results';
 import { COLORS, createPdf, pdfToBuffer } from './pdf-common';
@@ -66,7 +66,7 @@ export async function buildResultsPdf(contest: Contest, exportedBy: string): Pro
   drawRow(cols.map((c) => c.title), true, COLORS.burgundy);
   r.ranking.forEach((row, i) =>
     drawRow(
-      [String(row.rank), row.name, `${row.teamName} · ${row.className}`, String(row.votes), row.percent.toFixed(1)],
+      [String(row.rank), row.name, teamLabel({ className: row.className, name: row.teamName }), String(row.votes), row.percent.toFixed(1)],
       row.rank <= 3,
       i % 2 ? '#F7F2E6' : undefined,
     ),

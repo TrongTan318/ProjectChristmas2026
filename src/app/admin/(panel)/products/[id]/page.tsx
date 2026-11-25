@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ActionForm, SubmitButton } from '@/components/admin/ActionForm';
 import { Card, Checkbox, Field, Input, PageHeader, Select, Textarea, btn } from '@/components/admin/ui';
+import { teamLabel } from '@/lib/format';
 import { requireAdmin } from '@/server/auth';
 import { prisma } from '@/server/db';
 import { addYoutubeVideo, deleteProduct, updateProduct } from '../actions';
@@ -24,7 +25,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     <div className="space-y-6">
       <PageHeader
         title={product.name}
-        description={product.team ? `${product.team.name} · ${product.team.className}` : undefined}
+        description={product.team ? teamLabel(product.team) : undefined}
         actions={
           <>
             <Link href="/admin/products" className={btn.secondary}>← Danh sách</Link>

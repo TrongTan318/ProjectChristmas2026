@@ -166,7 +166,8 @@ model Zone {
 model Team {
   id         String    @id @default(cuid())
   contestId  String    @map("contest_id")
-  name       String
+  /// Tên đội (không bắt buộc — có lớp chỉ có tên lớp). NULL không vướng UNIQUE(contest, name).
+  name       String?
   className  String    @map("class_name")
   leaderName String?   @map("leader_name")
   members    String?   @db.Text
