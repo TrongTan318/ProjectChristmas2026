@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Ornament } from '@/components/site/Decor';
 import { Reveal } from '@/components/site/Reveal';
-import { ShareButton } from '@/components/site/ShareButton';
+import { VoteCodeDialog } from '@/components/site/VoteCodeDialog';
+import { getVotingState } from '@/domain/voting';
 import { StageGallery } from '@/components/site/StageGallery';
 import { YouTubeFacade } from '@/components/site/YouTubeFacade';
 import { splitParagraphs } from '@/lib/format';
@@ -61,6 +62,8 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const [all, voteSession, settings] = await Promise.all([listProducts(contest.id), getVoteSession(), getSiteSettings(contest.id)]);
+  // Khách chưa có phiên (chỉ bấm link, chưa quét QR) chỉ thấy nút bình chọn + popup nhập mã khi đang trong giờ bình chọn.
+  const votingOpen = getVotingState(contest) === 'OPEN';
 
   // Tên/ẩn-hiện giai đoạn: cấu hình riêng của lớp ghi đè mặc định ở Cài đặt.
   // Chỉ giai đoạn đang bật; xếp từ mới nhất (3) xuống cũ nhất (1); mở sẵn giai đoạn mới nhất có ảnh.
@@ -137,14 +140,19 @@ export default async function ProductPage({ params }: Props) {
             {product.team?.leaderName && (
               <p className="mt-6 text-sm text-ivory/60">Huynh trưởng phụ trách: {product.team.leaderName}</p>
             )}
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              {voteSession && (
+            {voteSession ? (
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link href={`/binh-chon?chon=${product.id}`} className="btn-glass text-lg">
                   ★ Bình chọn hang đá này
                 </Link>
-              )}
-              <ShareButton title={product.name} text={product.shortDescription} />
-            </div>
+              </div>
+            ) : (
+              votingOpen && (
+                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                  <VoteCodeDialog productId={product.id} productName={product.name} />
+                </div>
+              )
+            )}
             {voteSession && (
               <Link href="/binh-chon" className="mt-4 inline-block text-ivory/70 underline hover:text-gold-light">
                 ← Quay lại danh sách bình chọn
