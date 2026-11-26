@@ -145,11 +145,8 @@ async function seedDemo(contestId: string) {
         name,
         slug: name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         shortDescription: `Hang đá “${name}” do các em ${className} thực hiện bằng vật liệu tái chế, gợi lại khung cảnh đêm Chúa giáng sinh tại Bêlem.`,
-        designIdea:
-          'Các em dùng giấy kraft, thùng carton và đá tự nhiên để dựng hang đá. Ánh sáng vàng ấm được bố trí từ trên cao, tượng trưng cho ngôi sao dẫn đường.\n\nPhía trước là con đường nhỏ dẫn vào hang, mời gọi mỗi người bước vào gặp gỡ Chúa Hài Đồng.',
-        religiousMeaning:
-          'Thiên Chúa đã chọn sinh ra trong cảnh nghèo hèn của hang đá Bêlem để ở cùng con người. Hang đá nhắc chúng ta sống khiêm nhường, đơn sơ và yêu thương.',
-        christmasMessage: 'Chúa đến để mang bình an cho mọi tâm hồn thiện chí.\nHãy mở cửa lòng đón Chúa Hài Đồng.',
+        meaning:
+          'Các em dùng giấy kraft, thùng carton và đá tự nhiên để dựng hang đá. Ánh sáng vàng ấm được bố trí từ trên cao, tượng trưng cho ngôi sao dẫn đường.\n\nPhía trước là con đường nhỏ dẫn vào hang, mời gọi mỗi người bước vào gặp gỡ Chúa Hài Đồng.\n\nThiên Chúa đã chọn sinh ra trong cảnh nghèo hèn của hang đá Bêlem để ở cùng con người. Hang đá nhắc chúng ta sống khiêm nhường, đơn sơ và yêu thương.\n\nChúa đến để mang bình an cho mọi tâm hồn thiện chí.\nHãy mở cửa lòng đón Chúa Hài Đồng.',
         status: 'PUBLISHED',
         sortOrder: i + 1,
       },

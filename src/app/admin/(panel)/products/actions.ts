@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/lib/action';
-import { slugify } from '@/lib/format';
+import { normalizeNewlines, slugify } from '@/lib/format';
 import { parseYoutubeId } from '@/lib/media';
 import { bool, int, runAction, str, UserError } from '@/server/action';
 import { audit } from '@/server/audit';
@@ -55,9 +55,7 @@ const productSchema = z.object({
   name: z.string().min(1, 'Nhập tên sản phẩm').max(160),
   slug: z.string().max(80),
   shortDescription: z.string().max(500, 'Mô tả ngắn tối đa 500 ký tự'),
-  designIdea: z.string().max(10000),
-  religiousMeaning: z.string().max(10000),
-  christmasMessage: z.string().max(5000),
+  meaning: z.string().max(25000, 'Ý nghĩa tác phẩm tối đa 25.000 ký tự'),
   sortOrder: z.number().int().min(0).max(9999),
 });
 
@@ -71,9 +69,7 @@ export async function updateProduct(_prev: ActionState, form: FormData) {
       name: str(form, 'name'),
       slug: str(form, 'slug'),
       shortDescription: str(form, 'shortDescription'),
-      designIdea: str(form, 'designIdea'),
-      religiousMeaning: str(form, 'religiousMeaning'),
-      christmasMessage: str(form, 'christmasMessage'),
+      meaning: normalizeNewlines(str(form, 'meaning')),
       sortOrder: int(form, 'sortOrder'),
     });
     const publish = str(form, 'status') === 'PUBLISHED';
