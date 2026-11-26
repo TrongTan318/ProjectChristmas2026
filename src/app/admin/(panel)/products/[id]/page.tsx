@@ -50,14 +50,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           <Field label="Mô tả ngắn" hint="Tối đa 500 ký tự, hiển thị trên thẻ sản phẩm và khi chia sẻ">
             <Textarea name="shortDescription" rows={2} maxLength={500} defaultValue={product.shortDescription} />
           </Field>
-          <Field label="Ý tưởng thiết kế" hint="Xuống dòng 2 lần để tách đoạn">
-            <Textarea name="designIdea" rows={6} maxLength={10000} defaultValue={product.designIdea} />
-          </Field>
-          <Field label="Ý nghĩa tôn giáo">
-            <Textarea name="religiousMeaning" rows={6} maxLength={10000} defaultValue={product.religiousMeaning} />
-          </Field>
-          <Field label="Thông điệp Giáng Sinh" hint="Dòng đầu tiên được trích dẫn nổi bật">
-            <Textarea name="christmasMessage" rows={4} maxLength={5000} defaultValue={product.christmasMessage} />
+          <Field label="Ý nghĩa tác phẩm" hint="Ý tưởng thiết kế, ý nghĩa, thông điệp… Xuống dòng 2 lần để tách đoạn">
+            <Textarea name="meaning" rows={12} maxLength={25000} defaultValue={product.meaning} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Trạng thái">

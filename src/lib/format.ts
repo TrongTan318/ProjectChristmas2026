@@ -66,3 +66,16 @@ export function cn(...classes: (string | false | null | undefined)[]): string {
 export function teamLabel(team: { className: string; name: string | null }): string {
   return [team.className.trim(), team.name?.trim()].filter(Boolean).join(' · ');
 }
+
+/** Trình duyệt gửi xuống dòng của textarea dạng CRLF → chuẩn hóa về "\n" trước khi lưu. */
+export function normalizeNewlines(text: string): string {
+  return text.replace(/\r\n?/g, '\n');
+}
+
+/** Tách đoạn theo dòng trống (nhận cả CRLF có sẵn trong DB), bỏ đoạn rỗng. */
+export function splitParagraphs(text: string): string[] {
+  return normalizeNewlines(text)
+    .split(/\n[ \t]*\n/)
+    .map((p) => p.replace(/^\n+|\n+$/g, ''))
+    .filter((p) => p.trim() !== '');
+}

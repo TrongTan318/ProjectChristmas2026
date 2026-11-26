@@ -6,6 +6,7 @@ import { Reveal } from '@/components/site/Reveal';
 import { ShareButton } from '@/components/site/ShareButton';
 import { StageGallery } from '@/components/site/StageGallery';
 import { YouTubeFacade } from '@/components/site/YouTubeFacade';
+import { splitParagraphs } from '@/lib/format';
 import { fileUrl, mediaUrl } from '@/lib/media';
 import { ViewCount } from '@/components/site/ViewCount';
 import { ViewTracker } from '@/components/site/ViewTracker';
@@ -37,13 +38,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function Section({ title, children }: { title: string; children: string }) {
-  if (!children.trim()) return null;
+  const paragraphs = splitParagraphs(children);
+  if (!paragraphs.length) return null;
   return (
     <Reveal>
       <section className="border-t border-gold-dark/25 pt-8">
         <h2 className="font-serif text-2xl font-semibold text-burgundy-dark sm:text-3xl">{title}</h2>
         <div className="prose-museum mt-4 text-lg leading-relaxed text-ink/85">
-          {children.split(/\n{2,}/).map((p, i) => (
+          {paragraphs.map((p, i) => (
             <p key={i} className="whitespace-pre-line">{p}</p>
           ))}
         </div>
@@ -132,11 +134,6 @@ export default async function ProductPage({ params }: Props) {
             {product.shortDescription && (
               <p className="mt-6 text-lg leading-relaxed text-ivory/85 sm:text-xl">{product.shortDescription}</p>
             )}
-            {product.christmasMessage && (
-              <blockquote className="mt-8 font-serif text-xl text-gold-light italic">
-                “{product.christmasMessage.split('\n')[0]}”
-              </blockquote>
-            )}
             {product.team?.leaderName && (
               <p className="mt-6 text-sm text-ivory/60">Huynh trưởng phụ trách: {product.team.leaderName}</p>
             )}
@@ -157,14 +154,14 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </header>
 
-      <div className="bg-parchment-texture py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl space-y-10 px-4 sm:px-6">
-          <Section title="Ý tưởng thiết kế">{product.designIdea}</Section>
-          <Section title="Ý nghĩa tôn giáo">{product.religiousMeaning}</Section>
-          <Section title="Thông điệp Giáng Sinh">{product.christmasMessage}</Section>
-          {product.team?.members && <Section title="Thành viên thực hiện">{product.team.members}</Section>}
+      {(product.meaning.trim() || product.team?.members?.trim()) && (
+        <div className="bg-parchment-texture py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl space-y-10 px-4 sm:px-6">
+            <Section title="Ý nghĩa tác phẩm">{product.meaning}</Section>
+            {product.team?.members && <Section title="Thành viên thực hiện">{product.team.members}</Section>}
+          </div>
         </div>
-      </div>
+      )}
 
       {(youtubeVideos.length > 0 || fileVideos.length > 0) && (
         <section className="bg-forest py-16 sm:py-20">

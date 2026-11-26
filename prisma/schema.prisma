@@ -193,6 +193,9 @@ model Product {
   slug             String
   name             String
   shortDescription String        @default("") @map("short_description") @db.Text
+  /// "Ý nghĩa tác phẩm" — trường mô tả duy nhất trên trang chi tiết (gộp 3 trường cũ bên dưới).
+  meaning          String        @default("") @db.Text
+  /// 3 trường cũ: KHÔNG DÙNG NỮA (đã gộp vào `meaning` bằng migration 20261126100000), giữ làm dự phòng.
   designIdea       String        @default("") @map("design_idea") @db.Text
   religiousMeaning String        @default("") @map("religious_meaning") @db.Text
   christmasMessage String        @default("") @map("christmas_message") @db.Text
