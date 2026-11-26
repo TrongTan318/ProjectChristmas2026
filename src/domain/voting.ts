@@ -14,6 +14,17 @@ export function getVotingState(contest: VotingWindow, now: Date = new Date()): V
   return 'OPEN';
 }
 
+/** Id sản phẩm (cuid). Chỉ chữ thường + số → an toàn khi ghép vào URL. */
+const PRODUCT_ID_RE = /^[a-z0-9]{20,40}$/;
+
+/**
+ * Trang đích sau khi nhập mã phiếu thủ công. Có `choice` hợp lệ (bấm "Bình chọn" ở trang một tác phẩm)
+ * → `/binh-chon?chon=<id>` để chọn sẵn; còn lại → `/binh-chon`. Chỉ đánh dấu sẵn, vẫn phải bấm xác nhận.
+ */
+export function voteRedirectPath(choice: unknown): string {
+  return typeof choice === 'string' && PRODUCT_ID_RE.test(choice) ? `/binh-chon?chon=${choice}` : '/binh-chon';
+}
+
 export type VoteErrorCode =
   | 'INVALID_TOKEN'
   | 'TOKEN_USED'
