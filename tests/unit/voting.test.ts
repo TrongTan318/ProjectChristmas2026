@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getVotingState, pickFeatured, rank, stateToError } from '@/domain/voting';
+import { getVotingState, pickFeatured, rank, stateToError, voteRedirectPath } from '@/domain/voting';
 import { parseYoutubeId } from '@/lib/media';
 import { fromLocalInput, slugify, toLocalInput } from '@/lib/format';
 
@@ -25,6 +25,22 @@ describe('getVotingState', () => {
   it('map trạng thái sang mã lỗi', () => {
     expect(stateToError('OPEN')).toBeNull();
     expect(stateToError('ENDED')).toBe('VOTING_ENDED');
+  });
+});
+
+describe('voteRedirectPath (nhập mã từ popup ở trang tác phẩm)', () => {
+  it('id sản phẩm hợp lệ → chọn sẵn tác phẩm', () => {
+    expect(voteRedirectPath('cmi5x2k0a0001abcd1234efgh')).toBe('/binh-chon?chon=cmi5x2k0a0001abcd1234efgh');
+  });
+  it('không có / rỗng / sai kiểu → trang bình chọn thường', () => {
+    expect(voteRedirectPath(null)).toBe('/binh-chon');
+    expect(voteRedirectPath('')).toBe('/binh-chon');
+    expect(voteRedirectPath(123)).toBe('/binh-chon');
+  });
+  it('chặn chuỗi lạ có thể làm sai URL / chuyển hướng ra ngoài', () => {
+    for (const bad of ['https://evil.example', '//evil.example', 'abc&x=1', '../admin', 'cmi5x2k0a0001abcd1234efgh?x=1', 'CMI5X2K0A0001ABCD1234EFGH', 'a'.repeat(41), 'short']) {
+      expect(voteRedirectPath(bad)).toBe('/binh-chon');
+    }
   });
 });
 
